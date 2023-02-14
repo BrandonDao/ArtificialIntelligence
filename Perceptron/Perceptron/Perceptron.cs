@@ -2,21 +2,26 @@
 {
     public class Perceptron
     {
-        private const double defaultMinValue = -100;
-        private const double defaultMaxValue = 100;
+        private const double DefaultMinValue = -100;
+        private const double DefaultMaxValue = 100;
+
+        private Random random;
         private double[] weights;
         private double bias;
 
-        public Perceptron(double[] initialWeights, double initialBias)
+        public Perceptron(Random random, double[] initialWeights, double initialBias)
         {
             weights = initialWeights;
             bias = initialBias;
+            this.random = random;
         }
 
-        public Perceptron(int amountOfInputs)
+        public Perceptron(Random random, int amountOfInputs)
         {
             weights = new double[amountOfInputs];
-            Randomize(new Random(), defaultMinValue, defaultMaxValue);
+            this.random = random;
+
+            Randomize(random, DefaultMinValue, DefaultMaxValue);
         }
 
         public void Randomize(Random random, double min, double max)
@@ -32,7 +37,9 @@
         public double Compute(double[] inputs)
         {
             if (inputs.Length != weights.Length)
+            {
                 throw new ArgumentOutOfRangeException(nameof(inputs), "The inputs.Length does not match the weights.Length!");
+            }
 
             double output = bias;
             for (int i = 0; i < inputs.Length; i++)
@@ -46,7 +53,7 @@
         {
             var outputs = new double[inputs.GetLength(0)];
 
-            for(int i = 0; i < outputs.Length; i++)
+            for (int i = 0; i < outputs.Length; i++)
             {
                 outputs[i] = Compute(inputs[i]);
             }
