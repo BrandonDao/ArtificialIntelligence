@@ -1,12 +1,10 @@
-﻿using System.Linq.Expressions;
-using System.Transactions;
-
-namespace Perceptron
+﻿namespace Perceptron
 {
     public class Perceptron
     {
         private const double DefaultMinValue = -100;
         private const double DefaultMaxValue = 100;
+        private const double DefaultMutationAmount = 10;
 
         private Random random;
         private double[] weights;
@@ -14,17 +12,19 @@ namespace Perceptron
         double mutationAmount;
         Func<double, double, double> errorFunc;
 
-        public Perceptron(Random random, double[] initialWeights, double initialBias, Func<double, double, double> errorFunc)
+        public Perceptron(Random random, double[] initialWeights, double initialBias, double mutationAmount, Func<double, double, double> errorFunc)
         {
             weights = initialWeights;
             bias = initialBias;
             this.random = random;
+            this.mutationAmount = mutationAmount;
             this.errorFunc = errorFunc;
         }
 
         public Perceptron(Random random, int amountOfInputs, double initialBias, Func<double, double, double> errorFunc)
         {
             weights = new double[amountOfInputs];
+            mutationAmount = DefaultMutationAmount;
             this.random = random;
             this.errorFunc = errorFunc;
 
@@ -45,7 +45,7 @@ namespace Perceptron
         {
             double sum = 0;
 
-            for(int i = 0; i < inputs.GetLength(0); i++)
+            for (int i = 0; i < inputs.GetLength(0); i++)
             {
                 foreach (var input in inputs[i])
                 {
@@ -85,7 +85,7 @@ namespace Perceptron
         {
             double sum = 0;
 
-            for(int i = 0; i < inputs.GetLength(0); i++)
+            for (int i = 0; i < inputs.GetLength(0); i++)
             {
                 var savedInputs = new double[inputs[i].Length];
                 inputs[i].CopyTo(array: savedInputs, index: 0);
@@ -93,7 +93,7 @@ namespace Perceptron
                 int mutationIndex = random.Next(0, weights.Length + 1);
                 double mutationValue = random.NextDouble() * (-2 * mutationAmount) + mutationAmount;
 
-                if(mutationIndex == weights.Length)
+                if (mutationIndex == weights.Length)
                 {
                     bias += mutationValue;
                 }
@@ -103,8 +103,8 @@ namespace Perceptron
                 }
 
                 double newError = GetError(inputs, desiredOutputs);
-                
-                if(newError >= currentError)
+
+                if (newError >= currentError)
                 {
                     inputs[i] = savedInputs;
                     newError = currentError;
