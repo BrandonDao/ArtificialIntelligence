@@ -4,22 +4,31 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 
 namespace LineOfBestFitVisualizer
 {
-    public struct Line
+    public class Line
     {
+        public Color Color;
+
+        private double slope;
+        private int yIntercept;
         private Vector2 p1;
         private Vector2 p2;
 
-        public Line(double slope, int yIntercept, int screenWidth)
+        public Line(Color color, double slope, int yIntercept, int domainMax)
         {
-            p1 = new Vector2(0, yIntercept);
-            p2 = new Vector2(screenWidth, (int)(screenWidth * slope + yIntercept));
+            this.slope = slope;
+            this.yIntercept = yIntercept;
+            Color = color;
+
+            p1 = new Vector2(0, FindY(0));
+            p2 = new Vector2(domainMax, FindY(domainMax));
         }
 
-        public void Draw(SpriteBatch spriteBatch) => spriteBatch.DrawLine(p1, p2, Color.White, 4);
+        public void Draw(SpriteBatch spriteBatch) => spriteBatch.DrawLine(p1, p2, Color, 4);
+        public int FindY(int x) => (int)((x * slope) + yIntercept);
     }
 
     public class Game1 : Game
@@ -27,8 +36,14 @@ namespace LineOfBestFitVisualizer
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
+        private Random random;
+        private Perceptron perceptron;
+
+        private int domainMax;
+
         private List<Point> plots;
         private Line calculatedLine;
+        private Line approximatedLine;
 
         private MouseState previousMouseState;
         private KeyboardState previousKeyboardState;
@@ -42,8 +57,14 @@ namespace LineOfBestFitVisualizer
 
         protected override void Initialize()
         {
+            random = new Random(10);
+            domainMax = graphics.PreferredBackBufferWidth;
+
+            perceptron = new Perceptron(random, 1, 0, ErrorFunc);
+
             plots = new List<Point>();
-            calculatedLine = new Line(-100, -100, graphics.PreferredBackBufferWidth);
+            calculatedLine = new Line(Color.Black, 0, 0, domainMax);
+            approximatedLine = new Line(Color.Black, 0, 0, domainMax);
 
             base.Initialize();
         }
@@ -55,22 +76,51 @@ namespace LineOfBestFitVisualizer
 
         private void CalculateLineOfBestFit()
         {
+            double xAvg = 0;
+            double yAvg = 0;
             double numerator = 0;
             double denominator = 0;
 
-            double xAvg = plots.AsEnumerable().Average((Point p) => p.X);
-            double yAvg = plots.AsEnumerable().Average((Point p) => p.Y);
-
-            foreach (var point in plots)
+            foreach (Point p in plots)
             {
-                numerator += (point.X - xAvg) * (point.Y - yAvg);
-                denominator += Math.Pow(point.X - xAvg, 2);
+                xAvg += p.X;
+                yAvg += p.Y;
             }
+            xAvg /= plots.Count;
+            yAvg /= plots.Count;
 
+            foreach (Point p in plots)
+            {
+                numerator += (p.X - xAvg) * (p.Y - yAvg);
+                denominator += Math.Pow(p.X - xAvg, 2);
+            }
             double slope = numerator / denominator;
             int yIntercept = (int)(yAvg - xAvg * slope);
-            
-            calculatedLine = new Line(slope, yIntercept, graphics.PreferredBackBufferWidth);
+
+            calculatedLine = new Line(Color.Red, slope, yIntercept, graphics.PreferredBackBufferWidth);
+        }
+        private double ErrorFunc(double actual, double expected) => Math.Pow(actual - expected, 2);
+        private void ApproximateLineOfBestFit()
+        {
+            var inputs = new double[plots.Count][];
+            var outputs = new double[plots.Count];
+
+            for (int i = 0; i < plots.Count; i++)
+            {
+                inputs[i] = new double[1] { plots[i].X };
+                outputs[i] = plots[i].Y;
+            }
+
+            double currentError = perceptron.GetError(inputs, outputs);
+
+            perceptron.TrainWithHillClimbing(inputs, outputs, currentError);
+
+            double x1 = 0;
+            double x2 = domainMax;
+            double y1 = perceptron.Compute(new double[] { x1 });
+            double y2 = perceptron.Compute(new double[] { x2 });
+
+            approximatedLine = new Line(Color.Green, (y1 - y2) / (x1 - x2), (int)y1, domainMax);
         }
 
         protected override void Update(GameTime gameTime)
@@ -82,18 +132,27 @@ namespace LineOfBestFitVisualizer
 
             if (mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released)
             {
+                if (!graphics.GraphicsDevice.Viewport.Bounds.Contains(mouseState.Position)) return;
+
                 plots.Add(mouseState.Position);
 
                 if (plots.Count > 1)
                 {
                     CalculateLineOfBestFit();
+                    //ApproximateLineOfBestFit();
                 }
+            }
+
+            if (plots.Count > 1)
+            {
+                ApproximateLineOfBestFit();
             }
 
             if (keyboardState.IsKeyDown(Keys.C) && previousKeyboardState.IsKeyUp(Keys.C))
             {
                 plots.Clear();
-                calculatedLine = new Line(-100, -100, graphics.PreferredBackBufferWidth);
+                calculatedLine = new Line(Color.Black, 0, 0, graphics.PreferredBackBufferWidth);
+                approximatedLine = new Line(Color.Black, 0, 0, graphics.PreferredBackBufferWidth);
             }
 
             previousMouseState = mouseState;
@@ -106,12 +165,14 @@ namespace LineOfBestFitVisualizer
             GraphicsDevice.Clear(Color.Black);
             spriteBatch.Begin();
 
+            calculatedLine.Draw(spriteBatch);
+            approximatedLine.Draw(spriteBatch);
+
             foreach (var plot in plots)
             {
                 spriteBatch.DrawCircle(plot.ToVector2(), 5, 10, Color.White, 5);
             }
 
-            calculatedLine.Draw(spriteBatch);
 
             spriteBatch.End();
             base.Draw(gameTime);
