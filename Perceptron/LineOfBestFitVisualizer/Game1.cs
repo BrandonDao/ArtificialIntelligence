@@ -2,9 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
+using Perceptron;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace LineOfBestFitVisualizer
 {
@@ -37,7 +37,7 @@ namespace LineOfBestFitVisualizer
         private SpriteBatch spriteBatch;
 
         private Random random;
-        private Perceptron perceptron;
+        private HillClimbingPerceptron perceptron;
 
         private int domainMax;
 
@@ -60,7 +60,7 @@ namespace LineOfBestFitVisualizer
             random = new Random(10);
             domainMax = graphics.PreferredBackBufferWidth;
 
-            perceptron = new Perceptron(random, 1, 0, ErrorFunc);
+            perceptron = new HillClimbingPerceptron(random, amountOfInputs: 1, initialBias: 0, mutationAmount: .5d, ErrorFunc);
 
             plots = new List<Point>();
             calculatedLine = new Line(Color.Black, 0, 0, domainMax);
@@ -113,7 +113,7 @@ namespace LineOfBestFitVisualizer
 
             double currentError = perceptron.GetError(inputs, outputs);
 
-            perceptron.TrainWithHillClimbing(inputs, outputs, currentError);
+            perceptron.Train(inputs, outputs, currentError);
 
             double x1 = 0;
             double x2 = domainMax;
@@ -132,14 +132,13 @@ namespace LineOfBestFitVisualizer
 
             if (mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released)
             {
-                if (!graphics.GraphicsDevice.Viewport.Bounds.Contains(mouseState.Position)) return;
+                if (!IsActive || !graphics.GraphicsDevice.Viewport.Bounds.Contains(mouseState.Position)) return;
 
                 plots.Add(mouseState.Position);
 
                 if (plots.Count > 1)
                 {
                     CalculateLineOfBestFit();
-                    //ApproximateLineOfBestFit();
                 }
             }
 
