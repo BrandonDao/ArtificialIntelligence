@@ -5,6 +5,7 @@ using MonoGame.Extended;
 using Perceptron;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LineOfBestFitVisualizer
 {
@@ -41,7 +42,17 @@ namespace LineOfBestFitVisualizer
 
         private int domainMax;
 
-        private List<Point> plots;
+        private Point[] plots;
+        private Point[] normalizedPlots;
+        private double xMin;
+        private double xNormalizedMin;
+        private double xMax;
+        private double xNormalizedMax;
+        private double yMin;
+        private double yNormalizedMin;
+        private double yMax;
+        private double yNormalizedMax;
+
         private Line calculatedLine;
         private Line approximatedLine;
 
@@ -62,7 +73,19 @@ namespace LineOfBestFitVisualizer
 
             perceptron = new HillClimbingPerceptron(random, amountOfInputs: 1, initialBias: 0, mutationAmount: 5d, ErrorFunc);
 
-            plots = new List<Point>();
+            plots = Array.Empty<Point>();
+            normalizedPlots = Array.Empty<Point>();
+            xMin = 0;
+            xNormalizedMin = 0;
+            xMax = 0;
+            xNormalizedMax = 0;
+
+            yMin = 0;
+            yNormalizedMin = 0;
+            yMax = 0;
+            yNormalizedMax = 0;
+
+
             calculatedLine = new Line(Color.Black, 0, 0, domainMax);
             approximatedLine = new Line(Color.Black, 0, 0, domainMax);
 
@@ -73,6 +96,9 @@ namespace LineOfBestFitVisualizer
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
         }
+
+        private double Normalize(double x, double min, double max, double nMin, double nMax)
+            => (x - min) / (max - min) * (nMax - nMin) + nMin;
 
         private void CalculateLineOfBestFit()
         {
@@ -134,22 +160,30 @@ namespace LineOfBestFitVisualizer
             {
                 if (!IsActive || !graphics.GraphicsDevice.Viewport.Bounds.Contains(mouseState.Position)) return;
 
-                plots.Add(mouseState.Position);
+                var temp = new Point[plots.Length + 1];
 
-                if (plots.Count > 1)
+                plots.CopyTo(temp, 0);
+                temp[^1] = mouseState.Position;
+
+                plots = new Point[temp.Length];
+                temp.CopyTo(plots, 0);
+
+                normalizedPlots = new Point[temp.Length];
+
+                if (plots.Length > 1)
                 {
                     CalculateLineOfBestFit();
                 }
             }
 
-            if (plots.Count > 1)
+            if (plots.Length > 1)
             {
                 ApproximateLineOfBestFit();
             }
 
             if (keyboardState.IsKeyDown(Keys.C) && previousKeyboardState.IsKeyUp(Keys.C))
             {
-                plots.Clear();
+                plots = Array.Empty<Point>();
                 calculatedLine = new Line(Color.Black, 0, 0, graphics.PreferredBackBufferWidth);
                 approximatedLine = new Line(Color.Black, 0, 0, graphics.PreferredBackBufferWidth);
             }
