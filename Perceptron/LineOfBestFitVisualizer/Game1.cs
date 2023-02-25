@@ -60,7 +60,7 @@ namespace LineOfBestFitVisualizer
             random = new Random(10);
             domainMax = graphics.PreferredBackBufferWidth;
 
-            perceptron = new HillClimbingPerceptron(random, amountOfInputs: 1, initialBias: 0, mutationAmount: .5d, ErrorFunc);
+            perceptron = new HillClimbingPerceptron(random, amountOfInputs: 1, initialBias: 0, mutationAmount: 5d, ErrorFunc);
 
             plots = new List<Point>();
             calculatedLine = new Line(Color.Black, 0, 0, domainMax);

@@ -5,7 +5,9 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Perceptron", "Perceptron\Perceptron.csproj", "{31887B87-66D2-4CB4-99A5-03F6C28BE9EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LineOfBestFitVisualizer", "LineOfBestFitVisualizer\LineOfBestFitVisualizer.csproj", "{7B7AB2F6-46E0-43A4-8470-1CA706553DFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LineOfBestFitVisualizer", "LineOfBestFitVisualizer\LineOfBestFitVisualizer.csproj", "{7B7AB2F6-46E0-43A4-8470-1CA706553DFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogicGates", "LogicGates\LogicGates.csproj", "{514234D1-74CE-4FAB-AEF8-3A0F3FBC4B11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{7B7AB2F6-46E0-43A4-8470-1CA706553DFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B7AB2F6-46E0-43A4-8470-1CA706553DFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B7AB2F6-46E0-43A4-8470-1CA706553DFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{514234D1-74CE-4FAB-AEF8-3A0F3FBC4B11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{514234D1-74CE-4FAB-AEF8-3A0F3FBC4B11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{514234D1-74CE-4FAB-AEF8-3A0F3FBC4B11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{514234D1-74CE-4FAB-AEF8-3A0F3FBC4B11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
