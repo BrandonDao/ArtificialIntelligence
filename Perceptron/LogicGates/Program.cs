@@ -1,4 +1,4 @@
-﻿using Perceptron;
+﻿using NeuralNetworkLibrary.Perceptrons;
 
 namespace LogicGates
 {

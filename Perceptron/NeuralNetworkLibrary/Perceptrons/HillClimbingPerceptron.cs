@@ -1,9 +1,9 @@
-﻿namespace Perceptron
+﻿namespace NeuralNetworkLibrary.Perceptrons
 {
     public class HillClimbingPerceptron : Perceptron
     {
-        private double mutationAmount;
-        private Random random;
+        private readonly double mutationAmount;
+        private readonly Random random;
 
         public HillClimbingPerceptron(Random random, double[] initialWeights, double initialBias, double mutationAmount, Func<double, double, double> errorFunc)
             : base(initialWeights, initialBias, mutationAmount, errorFunc)
