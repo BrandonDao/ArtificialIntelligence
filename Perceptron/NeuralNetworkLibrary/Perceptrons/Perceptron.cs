@@ -1,4 +1,4 @@
-﻿namespace Perceptron
+﻿namespace NeuralNetworkLibrary.Perceptrons
 {
     public class Perceptron
     {

@@ -2,10 +2,10 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
-using Perceptron;
 using System;
+using NeuralNetworkLibrary.Perceptrons;
 using System.Collections.Generic;
-using System.Linq;
+using Microsoft.Xna.Framework.Content;
 
 namespace LineOfBestFitVisualizer
 {
@@ -41,17 +41,13 @@ namespace LineOfBestFitVisualizer
         private HillClimbingPerceptron perceptron;
 
         private int domainMax;
+        private double min;
+        private double max;
+        private double nMin;
+        private double nMax;
 
-        private Point[] plots;
-        private Point[] normalizedPlots;
-        private double xMin;
-        private double xNormalizedMin;
-        private double xMax;
-        private double xNormalizedMax;
-        private double yMin;
-        private double yNormalizedMin;
-        private double yMax;
-        private double yNormalizedMax;
+        private List<Point> plots;
+        private List<Point> normalizedPlots;
 
         private Line calculatedLine;
         private Line approximatedLine;
@@ -70,21 +66,15 @@ namespace LineOfBestFitVisualizer
         {
             random = new Random(10);
             domainMax = graphics.PreferredBackBufferWidth;
+            min = -1;
+            max = -1;
+            nMin = 0;
+            nMax = 400;
 
-            perceptron = new HillClimbingPerceptron(random, amountOfInputs: 1, initialBias: 0, mutationAmount: 5d, ErrorFunc);
+            perceptron = new HillClimbingPerceptron(random, amountOfInputs: 1, initialBias: 0, mutationAmount: 2.5d, ErrorFunc);
 
-            plots = Array.Empty<Point>();
-            normalizedPlots = Array.Empty<Point>();
-            xMin = 0;
-            xNormalizedMin = 0;
-            xMax = 0;
-            xNormalizedMax = 0;
-
-            yMin = 0;
-            yNormalizedMin = 0;
-            yMax = 0;
-            yNormalizedMax = 0;
-
+            plots = new List<Point>();
+            normalizedPlots = new List<Point>();
 
             calculatedLine = new Line(Color.Black, 0, 0, domainMax);
             approximatedLine = new Line(Color.Black, 0, 0, domainMax);
@@ -97,8 +87,23 @@ namespace LineOfBestFitVisualizer
             spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
-        private double Normalize(double x, double min, double max, double nMin, double nMax)
-            => (x - min) / (max - min) * (nMax - nMin) + nMin;
+
+        private double ErrorFunc(double actual, double expected) => Math.Pow(actual - expected, 2);
+        private static double Normalize(double x, double min, double max, double nMin, double nMax)
+            => ((x - min) / (max - min) * (nMax - nMin)) + nMin;
+
+        private void AddPlot(Point point)
+        {
+            double pointMin = point.X < point.Y ? point.X : point.Y;
+            double pointMax = point.X < point.Y ? point.X : point.Y;
+
+            plots.Add(point);
+
+            if (min == -1 || pointMin < min) min = pointMin;
+            if (max == -1 || pointMax > max) max = pointMax;
+
+            normalizedPlots.Add(new Point((int)Normalize(point.X, min, max, nMin, nMax), (int)Normalize(point.Y, min, max, nMin, nMax)));
+        }
 
         private void CalculateLineOfBestFit()
         {
@@ -107,15 +112,15 @@ namespace LineOfBestFitVisualizer
             double numerator = 0;
             double denominator = 0;
 
-            foreach (Point p in plots)
+            foreach (Point p in normalizedPlots)
             {
                 xAvg += p.X;
                 yAvg += p.Y;
             }
-            xAvg /= plots.Count;
-            yAvg /= plots.Count;
+            xAvg /= normalizedPlots.Count;
+            yAvg /= normalizedPlots.Count;
 
-            foreach (Point p in plots)
+            foreach (Point p in normalizedPlots)
             {
                 numerator += (p.X - xAvg) * (p.Y - yAvg);
                 denominator += Math.Pow(p.X - xAvg, 2);
@@ -125,16 +130,15 @@ namespace LineOfBestFitVisualizer
 
             calculatedLine = new Line(Color.Red, slope, yIntercept, graphics.PreferredBackBufferWidth);
         }
-        private double ErrorFunc(double actual, double expected) => Math.Pow(actual - expected, 2);
         private void ApproximateLineOfBestFit()
         {
-            var inputs = new double[plots.Count][];
-            var outputs = new double[plots.Count];
+            var inputs = new double[normalizedPlots.Count][];
+            var outputs = new double[normalizedPlots.Count];
 
-            for (int i = 0; i < plots.Count; i++)
+            for (int i = 0; i < normalizedPlots.Count; i++)
             {
-                inputs[i] = new double[1] { plots[i].X };
-                outputs[i] = plots[i].Y;
+                inputs[i] = new double[1] { normalizedPlots[i].X };
+                outputs[i] = normalizedPlots[i].Y;
             }
 
             double currentError = perceptron.GetError(inputs, outputs);
@@ -160,30 +164,22 @@ namespace LineOfBestFitVisualizer
             {
                 if (!IsActive || !graphics.GraphicsDevice.Viewport.Bounds.Contains(mouseState.Position)) return;
 
-                var temp = new Point[plots.Length + 1];
+                AddPlot(mouseState.Position);
 
-                plots.CopyTo(temp, 0);
-                temp[^1] = mouseState.Position;
-
-                plots = new Point[temp.Length];
-                temp.CopyTo(plots, 0);
-
-                normalizedPlots = new Point[temp.Length];
-
-                if (plots.Length > 1)
+                if (plots.Count > 1)
                 {
                     CalculateLineOfBestFit();
                 }
             }
 
-            if (plots.Length > 1)
+            if (plots.Count > 1)
             {
                 ApproximateLineOfBestFit();
             }
 
             if (keyboardState.IsKeyDown(Keys.C) && previousKeyboardState.IsKeyUp(Keys.C))
             {
-                plots = Array.Empty<Point>();
+                plots.Clear();
                 calculatedLine = new Line(Color.Black, 0, 0, graphics.PreferredBackBufferWidth);
                 approximatedLine = new Line(Color.Black, 0, 0, graphics.PreferredBackBufferWidth);
             }
@@ -201,7 +197,7 @@ namespace LineOfBestFitVisualizer
             calculatedLine.Draw(spriteBatch);
             approximatedLine.Draw(spriteBatch);
 
-            foreach (var plot in plots)
+            foreach (var plot in normalizedPlots)
             {
                 spriteBatch.DrawCircle(plot.ToVector2(), 5, 10, Color.White, 5);
             }
