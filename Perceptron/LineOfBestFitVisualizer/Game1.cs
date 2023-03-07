@@ -5,7 +5,7 @@ using MonoGame.Extended;
 using System;
 using NeuralNetworkLibrary.Perceptrons;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework.Content;
+using System.Linq;
 
 namespace LineOfBestFitVisualizer
 {
@@ -46,8 +46,16 @@ namespace LineOfBestFitVisualizer
         private double nMin;
         private double nMax;
 
-        private List<Point> plots;
-        private List<Point> normalizedPlots;
+        private Point[] plots;
+        private Point[] normalizedPlots;
+        private double xMin;
+        private double xNormalizedMin;
+        private double xMax;
+        private double xNormalizedMax;
+        private double yMin;
+        private double yNormalizedMin;
+        private double yMax;
+        private double yNormalizedMax;
 
         private Line calculatedLine;
         private Line approximatedLine;
@@ -71,10 +79,20 @@ namespace LineOfBestFitVisualizer
             nMin = 0;
             nMax = 400;
 
-            perceptron = new HillClimbingPerceptron(random, amountOfInputs: 1, initialBias: 0, mutationAmount: 2.5d, ErrorFunc);
+            perceptron = new HillClimbingPerceptron(random, amountOfInputs: 1, initialBias: 0, mutationAmount: 5d, ErrorFunc);
 
-            plots = new List<Point>();
-            normalizedPlots = new List<Point>();
+            plots = Array.Empty<Point>();
+            normalizedPlots = Array.Empty<Point>();
+            xMin = 0;
+            xNormalizedMin = 0;
+            xMax = 0;
+            xNormalizedMax = 0;
+
+            yMin = 0;
+            yNormalizedMin = 0;
+            yMax = 0;
+            yNormalizedMax = 0;
+
 
             calculatedLine = new Line(Color.Black, 0, 0, domainMax);
             approximatedLine = new Line(Color.Black, 0, 0, domainMax);
@@ -87,17 +105,8 @@ namespace LineOfBestFitVisualizer
             spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
-
-        private double ErrorFunc(double actual, double expected) => Math.Pow(actual - expected, 2);
-        private static double Normalize(double x, double min, double max, double nMin, double nMax)
-            => ((x - min) / (max - min) * (nMax - nMin)) + nMin;
-
-        private void AddPlot(Point point)
-        {
-            double pointMin = point.X < point.Y ? point.X : point.Y;
-            double pointMax = point.X < point.Y ? point.X : point.Y;
-
-            plots.Add(point);
+        private double Normalize(double x, double min, double max, double nMin, double nMax)
+            => (x - min) / (max - min) * (nMax - nMin) + nMin;
 
             if (min == -1 || pointMin < min) min = pointMin;
             if (max == -1 || pointMax > max) max = pointMax;
@@ -164,9 +173,17 @@ namespace LineOfBestFitVisualizer
             {
                 if (!IsActive || !graphics.GraphicsDevice.Viewport.Bounds.Contains(mouseState.Position)) return;
 
-                AddPlot(mouseState.Position);
+                var temp = new Point[plots.Length + 1];
 
-                if (plots.Count > 1)
+                plots.CopyTo(temp, 0);
+                temp[^1] = mouseState.Position;
+
+                plots = new Point[temp.Length];
+                temp.CopyTo(plots, 0);
+
+                normalizedPlots = new Point[temp.Length];
+
+                if (plots.Length > 1)
                 {
                     CalculateLineOfBestFit();
                 }
