@@ -1,17 +1,18 @@
-﻿using NeuralNetworkLibrary.Perceptrons;
+﻿using NeuralNetworkLibrary;
+using NeuralNetworkLibrary.Perceptrons;
 
 namespace LogicGates
 {
     public class Program
     {
-        private static double ErrorFunc(double actual, double expected) => Math.Abs(actual - expected);
+        private static double ErrorFunc(double actual, double expected) => Math.Pow(actual - expected, 2);
 
         static void Main(string[] args)
         {
             Random random = new('c'+'a'+'t');
 
-            HillClimbingPerceptron AndPerceptron = new(random, amountOfInputs: 2, initialBias: 0, mutationAmount: .25d, ErrorFunc);
-            HillClimbingPerceptron OrPerceptron = new(random, amountOfInputs: 2, initialBias: 0, mutationAmount: .25d, ErrorFunc);
+            HillClimbingPerceptron AndPerceptron = new(random, amountOfInputs: 2, initialBias: 0, mutationAmount: .05d, ErrorFunc);
+            HillClimbingPerceptron OrPerceptron = new(random, amountOfInputs: 2, initialBias: 0, mutationAmount: .05d, ErrorFunc);
 
             var inputs = new double[][]
             {
@@ -32,19 +33,24 @@ namespace LogicGates
                 OrError = OrPerceptron.Train(inputs, OrOutputs, OrError);
 
                 Console.Clear();
-                Console.WriteLine("AND Gate\n  in    out   rounded");
+                Console.WriteLine("AND Gate\n  in    out  binStep  sigmoid  tanH  ReLU  Rounded");
 
                 for (int i = 0; i < inputs.Length; i++)
                 {
                     double[] input = inputs[i];
-                    double output = Math.Round(AndPerceptron.Compute(input), digits: 1);
-                    int roundedOutput = (int)Math.Round(output);
+
+                    double rawOutput = AndPerceptron.Compute(input);
+                    double output = Math.Round(rawOutput, digits: 1);
+                    double binOutput = Math.Round(ActivationFunction.BinaryStep(rawOutput), digits: 1);
+                    double sigOutput = Math.Round(ActivationFunction.Sigmoid(rawOutput), digits: 1);
+                    double tanHOutput = Math.Round(ActivationFunction.Sigmoid(rawOutput), digits: 1);
+                    double reLUOutput = Math.Round(ActivationFunction.ReLU(rawOutput), digits: 1);
+                    double rounded = (int)Math.Round(rawOutput);
+
                     double expectedOutput = AndOutputs[i];
 
-                    Console.Write($"{(int)input[0]} & {(int)input[1]}: {output, 4} ");
-                    Console.ForegroundColor = roundedOutput == expectedOutput ? ConsoleColor.Green : ConsoleColor.Red;
-                    Console.WriteLine($"    {roundedOutput,2}");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine($"{(int)input[0]} & {(int)input[1]}: {output, 4}{binOutput, 5}" +
+                        $"{sigOutput, 11}{tanHOutput,7}{reLUOutput,6}{rounded,7}");
                 }
 
 
@@ -53,14 +59,19 @@ namespace LogicGates
                 for (int i = 0; i < inputs.Length; i++)
                 {
                     double[] input = inputs[i];
-                    double output = Math.Round(OrPerceptron.Compute(input), digits: 1);
-                    int roundedOutput = (int)Math.Round(output);
-                    double expectedOutput = OrOutputs[i];
 
-                    Console.Write($"{(int)input[0]} & {(int)input[1]}: {output,4} ");
-                    Console.ForegroundColor = roundedOutput == expectedOutput ? ConsoleColor.Green : ConsoleColor.Red;
-                    Console.WriteLine($"    {roundedOutput,2}");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    double rawOutput = OrPerceptron.Compute(input);
+                    double output = Math.Round(rawOutput, digits: 1);
+                    double binOutput = Math.Round(ActivationFunction.BinaryStep(rawOutput), digits: 1);
+                    double sigOutput = Math.Round(ActivationFunction.Sigmoid(rawOutput), digits: 1);
+                    double tanHOutput = Math.Round(ActivationFunction.Sigmoid(rawOutput), digits: 1);
+                    double reLUOutput = Math.Round(ActivationFunction.ReLU(rawOutput), digits: 1);
+                    double rounded = (int)Math.Round(rawOutput);
+
+                    double expectedOutput = AndOutputs[i];
+
+                    Console.WriteLine($"{(int)input[0]} & {(int)input[1]}: {output,4}{binOutput,5}" +
+                        $"{sigOutput,11}{tanHOutput,7}{reLUOutput,6}{rounded,7}");
                 }
 
                 Thread.Sleep(1);

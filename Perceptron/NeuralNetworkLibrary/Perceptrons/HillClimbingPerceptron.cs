@@ -22,40 +22,34 @@
 
         public double Train(double[][] inputs, double[] desiredOutputs, double currentError)
         {
-            double sum = 0;
+            int mutationIndex = random.Next(0, weights.Length + 1);
+            double mutationValue = random.NextDouble() * (-2 * mutationAmount) + mutationAmount;
 
-            for (int i = 0; i < inputs.GetLength(0); i++)
+            if (mutationIndex == weights.Length)
             {
-                int mutationIndex = random.Next(0, weights.Length + 1);
-                double mutationValue = random.NextDouble() * (-2 * mutationAmount) + mutationAmount;
+                bias += mutationValue;
+            }
+            else
+            {
+                weights[mutationIndex] += mutationValue;
+            }
 
+            double newError = GetError(inputs, desiredOutputs);
+
+            if (newError >= currentError)
+            {
                 if (mutationIndex == weights.Length)
                 {
-                    bias += mutationValue;
+                    bias -= mutationValue;
                 }
                 else
                 {
-                    weights[mutationIndex] += mutationValue;
+                    weights[mutationIndex] -= mutationValue;
                 }
-
-                double newError = GetError(inputs, desiredOutputs);
-
-                if (newError >= currentError)
-                {
-                    if (mutationIndex == weights.Length)
-                    {
-                        bias -= mutationValue;
-                    }
-                    else
-                    {
-                        weights[mutationIndex] -= mutationValue;
-                    }
-                }
-
-                sum += newError;
+                newError = currentError;
             }
 
-            return sum / inputs.GetLength(0);
+            return newError;
         }
     }
 }
