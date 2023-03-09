@@ -5,14 +5,15 @@ namespace LogicGates
 {
     public class Program
     {
-        private static double ErrorFunc(double actual, double expected) => Math.Pow(actual - expected, 2);
+        private static ErrorFunction ErrorFunc = new((double actual, double expected) => Math.Pow(actual - expected, 2), null);
 
         static void Main(string[] args)
         {
             Random random = new('c'+'a'+'t');
 
-            HillClimbingPerceptron AndPerceptron = new(random, amountOfInputs: 2, initialBias: 0, mutationAmount: .05d, ErrorFunc);
-            HillClimbingPerceptron OrPerceptron = new(random, amountOfInputs: 2, initialBias: 0, mutationAmount: .05d, ErrorFunc);
+            ActivationFunction actFunc = new(ActivationFunction.Identity, ActivationFunction.IdentityDerivative);
+            HillClimbingPerceptron AndPerceptron = new(random, amountOfInputs: 2, learningRate: 0.1d, actFunc, ErrorFunc);
+            HillClimbingPerceptron OrPerceptron = new(random, amountOfInputs: 2, learningRate: 0.1d, actFunc, ErrorFunc);
 
             var inputs = new double[][]
             {

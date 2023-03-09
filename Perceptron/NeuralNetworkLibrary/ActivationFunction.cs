@@ -15,6 +15,8 @@
         public double Derivative(double input) => derivative(input);
 
 
+        public static double Identity(double x) => x;
+        public static double IdentityDerivative(double x) => 1;
 
         public static double BinaryStep(double x) => x < 0 ? 0 : 1;
 

@@ -2,20 +2,20 @@
 {
     public class Perceptron
     {
+        public double LearningRate { get; set; }
+
         protected double[] weights;
         protected double bias;
-        protected Func<double, double, double> errorFunc;
+        protected ErrorFunction errorFunc;
+        protected ActivationFunction activationFunction;
 
-        public Perceptron(double[] initialWeights, double initialBias, double mutationAmount, Func<double, double, double> errorFunc)
-        {
-            weights = initialWeights;
-            bias = initialBias;
-            this.errorFunc = errorFunc;
-        }
-
-        public Perceptron(int amountOfInputs, double initialBias, Func<double, double, double> errorFunc)
+        public Perceptron(int amountOfInputs, double learningRate, ActivationFunction activationFunction, ErrorFunction errorFunc)
         {
             weights = new double[amountOfInputs];
+
+            LearningRate = learningRate;
+            this.errorFunc = errorFunc;
+            this.activationFunction = activationFunction;
             this.errorFunc = errorFunc;
         }
 
@@ -29,15 +29,16 @@
             }
         }
 
+        public double GetError(double[] inputs, double desiredOutputs)
+            => errorFunc.Function(Compute(inputs), desiredOutputs);
+
         public double GetError(double[][] inputs, double[] desiredOutputs)
         {
             double sum = 0;
 
-            double[] outputs = Compute(inputs);
-
-            for (int i = 0; i < outputs.Length; i++)
+            for (int i = 0; i < desiredOutputs.Length; i++)
             {
-                sum += errorFunc.Invoke(outputs[i], desiredOutputs[i]);
+                sum += GetError(inputs[i], desiredOutputs[i]);
             }
             return sum / desiredOutputs.Length;
         }
