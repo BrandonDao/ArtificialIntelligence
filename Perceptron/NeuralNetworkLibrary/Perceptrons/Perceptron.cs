@@ -43,7 +43,7 @@
             return sum / desiredOutputs.Length;
         }
 
-        public double Compute(double[] inputs)
+        public virtual double Compute(double[] inputs)
         {
             if (inputs.Length != weights.Length)
             {
@@ -58,7 +58,7 @@
             }
             return output;
         }
-        public double[] Compute(double[][] inputs)
+        public virtual double[] Compute(double[][] inputs)
         {
             var outputs = new double[inputs.GetLength(0)];
 

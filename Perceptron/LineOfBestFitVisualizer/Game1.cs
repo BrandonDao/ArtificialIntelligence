@@ -6,6 +6,8 @@ using System;
 using NeuralNetworkLibrary.Perceptrons;
 using System.Collections.Generic;
 using System.Linq;
+using NeuralNetworkLibrary;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace LineOfBestFitVisualizer
 {
@@ -38,7 +40,7 @@ namespace LineOfBestFitVisualizer
         private SpriteBatch spriteBatch;
 
         private Random random;
-        private HillClimbingPerceptron perceptron;
+        private GradientDescentPerceptron perceptron;
 
         private int domainMax;
         private double min;
@@ -70,7 +72,10 @@ namespace LineOfBestFitVisualizer
             nMin = 0;
             nMax = 400;
 
-            perceptron = new HillClimbingPerceptron(random, amountOfInputs: 1, initialBias: 0, mutationAmount: 5d, ErrorFunc);
+            var errorFunc = new ErrorFunction(ErrorFunction.MeanSquaredError, ErrorFunction.MeanSquaredErrorDerivative);
+            var actFunc = new ActivationFunction((double x) => x / domainMax, (double x) => 1);
+
+            perceptron = new GradientDescentPerceptron(random, amountOfInputs: 2, learningRate: .001d, actFunc, errorFunc);
 
             plots = new List<Point>();
 
@@ -111,7 +116,6 @@ namespace LineOfBestFitVisualizer
 
             calculatedLine = new Line(Color.Red, slope, yIntercept, graphics.PreferredBackBufferWidth);
         }
-        private double ErrorFunc(double actual, double expected) => Math.Pow(actual - expected, 2);
         private void ApproximateLineOfBestFit()
         {
             var inputs = new double[plots.Count][];
@@ -119,13 +123,12 @@ namespace LineOfBestFitVisualizer
 
             for (int i = 0; i < plots.Count; i++)
             {
-                inputs[i] = new double[1] { plots[i].X };
+                inputs[i] = new double[2] { plots[i].X, plots[i].Y };
                 outputs[i] = plots[i].Y;
             }
 
-            double currentError = perceptron.GetError(inputs, outputs);
-
-            perceptron.Train(inputs, outputs, currentError);
+            double currErrror = perceptron.GetError(inputs, outputs);
+            perceptron.TrainFor(inputs, outputs, 5000);
 
             double x1 = 0;
             double x2 = domainMax;
@@ -147,6 +150,10 @@ namespace LineOfBestFitVisualizer
                 if (!IsActive || !graphics.GraphicsDevice.Viewport.Bounds.Contains(mouseState.Position)) return;
 
                 plots.Add(mouseState.Position);
+                var errorFunc = new ErrorFunction(ErrorFunction.MeanSquaredError, ErrorFunction.MeanSquaredErrorDerivative);
+                var actFunc = new ActivationFunction((double x) => x / domainMax, (double x) => 1);
+
+                perceptron = new GradientDescentPerceptron(random, amountOfInputs: 1, learningRate: .0005d, actFunc, errorFunc);
                 if (plots.Count > 1)
                 {
                     CalculateLineOfBestFit();

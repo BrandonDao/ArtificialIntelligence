@@ -5,15 +5,15 @@ namespace LogicGates
 {
     public class Program
     {
-        private static ErrorFunction ErrorFunc = new((double actual, double expected) => Math.Pow(actual - expected, 2), null);
+        private static ErrorFunction ErrorFunc = new(ErrorFunction.MeanAbsoluteError, ErrorFunction.MeanAbsoluteErrorDerivative);
 
         static void Main(string[] args)
         {
             Random random = new('c'+'a'+'t');
 
             ActivationFunction actFunc = new(ActivationFunction.Identity, ActivationFunction.IdentityDerivative);
-            HillClimbingPerceptron AndPerceptron = new(random, amountOfInputs: 2, learningRate: 0.1d, actFunc, ErrorFunc);
-            HillClimbingPerceptron OrPerceptron = new(random, amountOfInputs: 2, learningRate: 0.1d, actFunc, ErrorFunc);
+            GradientDescentPerceptron AndPerceptron = new(random, amountOfInputs: 2, learningRate: 0.0001d, actFunc, ErrorFunc);
+            GradientDescentPerceptron OrPerceptron = new(random, amountOfInputs: 2, learningRate: 0.0001d, actFunc, ErrorFunc);
 
             var inputs = new double[][]
             {
@@ -30,8 +30,8 @@ namespace LogicGates
 
             while (true)
             {
-                AndError = AndPerceptron.Train(inputs, AndOutputs, AndError);
-                OrError = OrPerceptron.Train(inputs, OrOutputs, OrError);
+                AndError = AndPerceptron.Train(inputs, AndOutputs);
+                OrError = OrPerceptron.Train(inputs, OrOutputs);
 
                 Console.Clear();
                 Console.WriteLine("AND Gate\n  in    out  binStep  sigmoid  tanH  ReLU  Rounded");
