@@ -2,53 +2,45 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
-using System;
-using NeuralNetworkLibrary.Perceptrons;
-using System.Collections.Generic;
-using System.Linq;
 using NeuralNetworkLibrary;
-using static System.Formats.Asn1.AsnWriter;
+using NeuralNetworkLibrary.Perceptrons;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LineOfBestFitVisualizer
 {
-    public class Line
-    {
-        public Color Color;
-
-        private double slope;
-        private int yIntercept;
-        private Vector2 p1;
-        private Vector2 p2;
-
-        public Line(Color color, double slope, int yIntercept, int domainMax)
-        {
-            this.slope = slope;
-            this.yIntercept = yIntercept;
-            Color = color;
-
-            p1 = new Vector2(0, FindY(0));
-            p2 = new Vector2(domainMax, FindY(domainMax));
-        }
-
-        public void Draw(SpriteBatch spriteBatch) => spriteBatch.DrawLine(p1, p2, Color, 4);
-        public int FindY(int x) => (int)((x * slope) + yIntercept);
-    }
-
     public class Game1 : Game
     {
+        public class Line
+        {
+            public static Line None { get; } = new(Color.Black, 0, 0, 0);
+
+            public Color Color;
+
+            private readonly double slope;
+            private readonly int yIntercept;
+            private Vector2 p1;
+            private Vector2 p2;
+
+            public Line(Color color, double slope, int yIntercept, int domainMax)
+            {
+                this.slope = slope;
+                this.yIntercept = yIntercept;
+                Color = color;
+
+                p1 = new Vector2(0, FindY(0));
+                p2 = new Vector2(domainMax, FindY(domainMax));
+            }
+
+            public void Draw(SpriteBatch spriteBatch) => spriteBatch.DrawLine(p1, p2, Color, 4);
+            public int FindY(int x) => (int)((x * slope) + yIntercept);
+        }
+
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
-        private Random random;
-        private GradientDescentPerceptron perceptron;
-
-        private int domainMax;
-        private double min;
-        private double max;
-        private double nMin;
-        private double nMax;
-
-        private List<Point> plots;
+        private List<Point> points;
 
         private Line calculatedLine;
         private Line approximatedLine;
@@ -56,32 +48,52 @@ namespace LineOfBestFitVisualizer
         private MouseState previousMouseState;
         private KeyboardState previousKeyboardState;
 
+        private int domainMax;
+        double Normalize(double x) => x / domainMax;
+
+        private GradientDescentPerceptron perceptron;
+        readonly ErrorFunction errorFunc = new(ErrorFunction.MeanSquaredError, ErrorFunction.MeanSquaredErrorDerivative);
+        readonly ActivationFunction actFunc = new(ActivationFunction.Identity, ActivationFunction.IdentityDerivative);
+        const double defaultLearningRate = 0.1d;
+        const int trainingIterations = 1;
+        const int fastTrainingIterations = 3;
+
+        int drawCount, updateCount = 0;
+
         public Game1()
         {
-            graphics = new GraphicsDeviceManager(this);
+            graphics = new GraphicsDeviceManager(this)
+            {
+                PreferredBackBufferWidth = 1000,
+                PreferredBackBufferHeight = 1000
+            };
+
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
 
+        GradientDescentPerceptron GetNewPerceptron()
+            => new(
+                amountOfInputs: 1,
+                learningRate: defaultLearningRate / (points.Count == 0 ? 1 : points.Count),
+                actFunc, errorFunc);
+
+        void ResetLines()
+        {
+            calculatedLine = Line.None;
+            approximatedLine = Line.None;
+        }
+
         protected override void Initialize()
         {
-            random = new Random(10);
             domainMax = graphics.PreferredBackBufferWidth;
-            min = -1;
-            max = -1;
-            nMin = 0;
-            nMax = 400;
 
-            var errorFunc = new ErrorFunction(ErrorFunction.MeanSquaredError, ErrorFunction.MeanSquaredErrorDerivative);
-            var actFunc = new ActivationFunction((double x) => x / domainMax, (double x) => 1);
+            TargetElapsedTime /= 2;
 
-            perceptron = new GradientDescentPerceptron(random, amountOfInputs: 2, learningRate: .001d, actFunc, errorFunc);
-
-            plots = new List<Point>();
-
-
-            calculatedLine = new Line(Color.Black, 0, 0, domainMax);
-            approximatedLine = new Line(Color.Black, 0, 0, domainMax);
+            points = new List<Point>();
+            ResetLines();
+            
+            perceptron = GetNewPerceptron();
 
             base.Initialize();
         }
@@ -98,15 +110,15 @@ namespace LineOfBestFitVisualizer
             double numerator = 0;
             double denominator = 0;
 
-            foreach (Point p in plots)
+            foreach (Point p in points)
             {
                 xAvg += p.X;
                 yAvg += p.Y;
             }
-            xAvg /= plots.Count;
-            yAvg /= plots.Count;
+            xAvg /= points.Count;
+            yAvg /= points.Count;
 
-            foreach (Point p in plots)
+            foreach (Point p in points)
             {
                 numerator += (p.X - xAvg) * (p.Y - yAvg);
                 denominator += Math.Pow(p.X - xAvg, 2);
@@ -116,60 +128,78 @@ namespace LineOfBestFitVisualizer
 
             calculatedLine = new Line(Color.Red, slope, yIntercept, graphics.PreferredBackBufferWidth);
         }
-        private void ApproximateLineOfBestFit()
+        private void ApproximateLineOfBestFit(bool willTrainMore)
         {
-            var inputs = new double[plots.Count][];
-            var outputs = new double[plots.Count];
+            var inputs = new double[points.Count][];
+            var outputs = new double[points.Count];
 
-            for (int i = 0; i < plots.Count; i++)
+            for (int i = 0; i < points.Count; i++)
             {
-                inputs[i] = new double[2] { plots[i].X, plots[i].Y };
-                outputs[i] = plots[i].Y;
+                inputs[i] = new double[] { Normalize(points[i].X) };
+                outputs[i] = Normalize(points[i].Y);
             }
 
-            double currErrror = perceptron.GetError(inputs, outputs);
-            perceptron.TrainFor(inputs, outputs, 5000);
+            perceptron.TrainFor(inputs, outputs, willTrainMore ? fastTrainingIterations : trainingIterations);
 
             double x1 = 0;
             double x2 = domainMax;
             double y1 = perceptron.Compute(new double[] { x1 });
             double y2 = perceptron.Compute(new double[] { x2 });
 
-            approximatedLine = new Line(Color.Green, (y1 - y2) / (x1 - x2), (int)y1, domainMax);
+            approximatedLine = new Line(Color.Green, (y1 - y2) / (x1 - x2), yIntercept: (int)(y1 * domainMax), domainMax);
+        }
+
+        private void AddOrRemovePoint(MouseState mouseState)
+        {
+            int size = 20;
+            var mouseHitbox = new Rectangle(mouseState.Position.X - size / 2, mouseState.Position.Y - size / 2, size, size);
+            bool hasRemoved = false;
+
+            foreach (var point in points)
+            {
+                if (!mouseHitbox.Contains(point)) continue;
+
+                points.Remove(point);
+                hasRemoved = true;
+                ResetLines();
+
+                break;
+            }
+
+            if (!hasRemoved)
+            {
+                points.Add(mouseState.Position);
+            }
         }
 
         protected override void Update(GameTime gameTime)
         {
+            //updateCount++;
             var keyboardState = Keyboard.GetState();
             var mouseState = Mouse.GetState();
 
-            if (keyboardState.IsKeyDown(Keys.Escape)) Exit();
-
-            if (mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released)
+            if (keyboardState.IsKeyDown(Keys.Escape))
             {
-                if (!IsActive || !graphics.GraphicsDevice.Viewport.Bounds.Contains(mouseState.Position)) return;
+                Exit();
+            }
 
-                plots.Add(mouseState.Position);
-                var errorFunc = new ErrorFunction(ErrorFunction.MeanSquaredError, ErrorFunction.MeanSquaredErrorDerivative);
-                var actFunc = new ActivationFunction((double x) => x / domainMax, (double x) => 1);
+            if (mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released
+                && IsActive && graphics.GraphicsDevice.Viewport.Bounds.Contains(mouseState.Position))
+            {
 
-                perceptron = new GradientDescentPerceptron(random, amountOfInputs: 1, learningRate: .0005d, actFunc, errorFunc);
-                if (plots.Count > 1)
+                perceptron = GetNewPerceptron();
+
+                AddOrRemovePoint(mouseState);
+
+                if (points.Count > 1)
                 {
                     CalculateLineOfBestFit();
                 }
             }
 
-            if (plots.Count > 1)
+            if (points.Count > 1)
             {
-                ApproximateLineOfBestFit();
-            }
-
-            if (keyboardState.IsKeyDown(Keys.C) && previousKeyboardState.IsKeyUp(Keys.C))
-            {
-                plots.Clear();
-                calculatedLine = new Line(Color.Black, 0, 0, graphics.PreferredBackBufferWidth);
-                approximatedLine = new Line(Color.Black, 0, 0, graphics.PreferredBackBufferWidth);
+                ApproximateLineOfBestFit(willTrainMore: keyboardState.IsKeyDown(Keys.Space));
             }
 
             previousMouseState = mouseState;
@@ -179,13 +209,14 @@ namespace LineOfBestFitVisualizer
 
         protected override void Draw(GameTime gameTime)
         {
+            //drawCount++;
             GraphicsDevice.Clear(Color.Black);
             spriteBatch.Begin();
 
             calculatedLine.Draw(spriteBatch);
             approximatedLine.Draw(spriteBatch);
 
-            foreach (var plot in plots)
+            foreach (var plot in points)
             {
                 spriteBatch.DrawCircle(plot.ToVector2(), 5, 10, Color.White, 5);
             }

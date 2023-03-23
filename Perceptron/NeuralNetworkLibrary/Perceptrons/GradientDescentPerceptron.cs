@@ -2,13 +2,10 @@
 {
     public class GradientDescentPerceptron : Perceptron
     {
-        private readonly Random random;
-
-        public GradientDescentPerceptron(Random random, int amountOfInputs, double learningRate,
+        public GradientDescentPerceptron(int amountOfInputs, double learningRate,
             ActivationFunction activationFunction, ErrorFunction errorFunc)
             : base(amountOfInputs, learningRate, activationFunction, errorFunc)
         {
-            this.random = random;
             this.errorFunc = errorFunc;
         }
 
@@ -49,24 +46,11 @@
 
             for (int i = 0; i < desiredOutputs.Length; i++)
             {
-                double adjustmentVal = errorFunc.Derivative(activatedOutputs[i], desiredOutputs[i])
+                double errorDeriv = errorFunc.Derivative(activatedOutputs[i], desiredOutputs[i]);
+
+                double adjustmentVal = errorDeriv
                 * activationFunction.Derivative(outputs[i])
                 * -LearningRate;
-
-                if(adjustmentVal == double.NaN)
-                {
-                    adjustmentVal = 0;
-                }
-
-                if (adjustmentVal > 10)
-                {
-                    adjustmentVal = 10;
-                }
-                else if(adjustmentVal < -10)
-                {
-                    adjustmentVal = -10;
-                }
-
 
                 for (int j = 0; j < weights.Length; j++)
                 {
@@ -74,11 +58,6 @@
                 }
                 bias += adjustmentVal;
 
-            }
-            double newError = GetError(inputs, desiredOutputs);
-            if (newError - error > 10)
-            {
-                ;
             }
 
             return error;

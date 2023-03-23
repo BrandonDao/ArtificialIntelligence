@@ -29,8 +29,8 @@
             }
         }
 
-        public double GetError(double[] inputs, double desiredOutputs)
-            => errorFunc.Function(Compute(inputs), desiredOutputs);
+        public double GetError(double[] inputs, double desiredOutput)
+            => errorFunc.Function(Compute(inputs), desiredOutput);
 
         public double GetError(double[][] inputs, double[] desiredOutputs)
         {
@@ -38,7 +38,8 @@
 
             for (int i = 0; i < desiredOutputs.Length; i++)
             {
-                sum += GetError(inputs[i], desiredOutputs[i]);
+                var currError = GetError(inputs[i], desiredOutputs[i]);
+                sum += currError;
             }
             return sum / desiredOutputs.Length;
         }
