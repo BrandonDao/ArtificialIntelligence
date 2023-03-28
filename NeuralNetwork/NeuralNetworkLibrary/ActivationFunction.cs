@@ -15,18 +15,23 @@
         public double Derivative(double input) => derivative(input);
 
 
-        public static double Identity(double x) => x;
-        public static double IdentityDerivative(double x) => 1;
+        public static ActivationFunction Identity => new (
+                function: (double x) => x,
+                derivative: (double x) => 1);
 
-        public static double BinaryStep(double x) => x < 0 ? 0 : 1;
+        public static ActivationFunction Sigmoid => new(
+            function: SigmoidFunc,
+            derivative: (double x) => SigmoidFunc(x) * SigmoidFunc(1 - x));
 
-        public static double Sigmoid(double x) => 1 / (1 + Math.Pow(Math.E, -x));
-        public static double SigmoidDerivative(double x) => Sigmoid(x) * Sigmoid(1 - x);
+        public static ActivationFunction TanH = new(
+            function: TanHFunc,
+            derivative: (double x) => 1 - Math.Pow(TanHFunc(x), 2));
 
-        public static double TanH(double x) => Math.Tanh(x);
-        public static double TanHDerivative(double x) => 1 - Math.Pow(TanH(x), 2);
+        public static ActivationFunction ReLU = new(
+            function: (double x) => x < 0 ? 0 : x,
+            derivative: (double x) => x < 0 ? 0 : 1);
 
-        public static double ReLU(double x) => x < 0 ? 0 : x;
-        public static double ReLUDerivative(double x) => x < 0 ? 0 : 1;
+        private static double SigmoidFunc(double x) => 1 / (1 + Math.Pow(Math.E, -x));
+        private static double TanHFunc(double x) => Math.Tanh(x);
     }
 }

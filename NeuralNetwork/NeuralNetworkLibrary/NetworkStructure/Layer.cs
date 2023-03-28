@@ -27,7 +27,11 @@
 
         public double[] Compute()
         {
-            
+            for(int i = 0; i < Outputs.Length; i++)
+            {
+                Outputs[i] = Neurons[i].Compute();
+            }
+            return Outputs;
         }
     }
 }
