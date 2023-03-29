@@ -54,10 +54,10 @@ namespace NeuralNetworkLibrary
         {
             int mid = net.Layers.Length / 2;
 
-            var layerA = net.Layers[random.Next(0, mid)];
-            var layerB = net.Layers[random.Next(mid, net.Layers.Length)];
+            Layer layerA = net.Layers[random.Next(0, mid)];
+            Layer layerB = net.Layers[random.Next(mid, net.Layers.Length)];
 
-            var temp = new Layer();
+            var temp = new Layer()
         }
 
         public void Train()
