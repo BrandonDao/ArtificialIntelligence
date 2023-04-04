@@ -25,22 +25,33 @@ namespace NeuralNetworkLibrary
     {
         public Random Random { get; set; }
 
-        public double TopSurvivalThreshold { get; set; } = 10;
-        public double BottomSurvivalThreshold { get; set; } = 10;
+        public double TopSurvivalThreshold { get; set; } = .10d;
+        public double BottomSurvivalThreshold { get; set; } = .10d;
 
         public double MutationRate { get; set; }
 
         public Mutator Mutator { get; set; }
 
-        List<NeuralNetwork> networks;
+        NeuralNetwork[] networks;
         NeuralNetworkComparer comparer;
 
-        public GeneticTrainer(Random random, int min, int max, int networkAmount, Func<NeuralNetwork, double> fitnessFunction)
+        double min;
+        double max;
+
+        public GeneticTrainer(Random random, int networkAmount, int[] neuronsPerLayer, double min, double max,
+            ActivationFunction activationFunction, ErrorFunction errorFunction, Func<NeuralNetwork, double> fitnessFunction)
         {
             Random = random;
 
-            networks = new List<NeuralNetwork>(networkAmount);
-            networks.ForEach((NeuralNetwork n) => n.Randomize(Random, min, max));
+            this.min = min;
+            this.max = max;
+
+            networks = new NeuralNetwork[networkAmount];
+            for(int i = 0; i < networkAmount; i++)
+            {
+                networks[i] = new NeuralNetwork(activationFunction, errorFunction, neuronsPerLayer);
+                networks[i].Randomize(Random, min, max);
+            }
 
             Mutator = new Mutator();
 
@@ -50,42 +61,37 @@ namespace NeuralNetworkLibrary
         }
 
         // layer crossover
-        public void Crossover(NeuralNetwork net, Random random)
+        public void Crossover(Random random, int topCount, int bottomCount)
         {
-            int mid = net.Layers.Length / 2;
+            for (int i = topCount; i < networks.Length - bottomCount; i++)
+            {
+                int layerIndex = random.Next(1, networks[i].Layers.Length);
 
-            Layer layerA = net.Layers[random.Next(0, mid)];
-            Layer layerB = net.Layers[random.Next(mid, net.Layers.Length)];
+                Layer badLayer = networks[i].Layers[layerIndex];
+                Layer goodLayer = networks[random.Next(0, topCount)].Layers[layerIndex];
 
-            var temp = new Layer()
+                badLayer = new Layer(goodLayer.Neurons[0].ActivationFunc, goodLayer.Neurons.Length, previousLayer: networks[i].Layers[layerIndex - 1]);
+            }
         }
 
         public void Train()
         {
-            networks.Sort(comparer);
+            Array.Sort(networks, comparer);
 
-            /*
-             * if (first == good)
-             * {
-             *     finish training
-             * }
-             */
+            int topCount = (int)(networks.Length * TopSurvivalThreshold);
+            int bottomCount = (int)(networks.Length * BottomSurvivalThreshold);
 
-            int topCount = (int)(networks.Count * TopSurvivalThreshold);
-            int bottomCount = (int)(networks.Count * BottomSurvivalThreshold);
+            Crossover(Random, topCount, bottomCount);
 
-            for (int i = topCount; i < networks.Count - bottomCount; i++)
-            {
-                // crossover
-            }
-
-            for (int i = topCount; i < networks.Count - bottomCount; i++)
+            for (int i = topCount; i < networks.Length - bottomCount; i++)
             {
                 Mutator.Mutate(networks[i], Random, MutationRate);
             }
+
+            for(int i = bottomCount; i < networks.Length; i++)
+            {
+                networks[i].Randomize(Random, min, max);
+            }
         }
-
-
-
     }
 }

@@ -32,10 +32,10 @@
         {
             this.errorFunc = errorFunc;
 
-            Inputs = new double[neuronsPerLayer[0]];
-
             Layers = new Layer[neuronsPerLayer.Length];
-            Layers[0] = new Layer(ActivationFunction.Identity, neuronsPerLayer[0], null);
+            Layers[0] = new Layer(ActivationFunction.Identity, neuronsPerLayer[0]);
+
+            Inputs = new double[neuronsPerLayer[0]];
 
             Layer prevLayer = Layers[0];
 

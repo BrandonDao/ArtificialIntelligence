@@ -9,15 +9,21 @@
         public double Bias { get; set; }
         public Dendrite[] Dendrites { get; set; }
 
-        public Neuron(ActivationFunction activationFunc, Neuron[] previousNerons)
+        public Neuron(ActivationFunction activationFunc, Neuron[] previousNeurons)
         {
             ActivationFunc = activationFunc;
 
-            Dendrites = new Dendrite[previousNerons.Length];
-            for (int i = 0; i < previousNerons.Length; i++)
+            Dendrites = new Dendrite[previousNeurons.Length];
+            for (int i = 0; i < previousNeurons.Length; i++)
             {
-                Dendrites[i] = new Dendrite(previousNerons[i], next: this, weight: 0);
+                Dendrites[i] = new Dendrite(previousNeurons[i], next: this, weight: 0);
             }
+        }
+
+        public Neuron(ActivationFunction activationFunc)
+        {
+            ActivationFunc = activationFunc;
+            Dendrites = Array.Empty<Dendrite>();
         }
 
         public void Randomize(Random random, double min, double max)
