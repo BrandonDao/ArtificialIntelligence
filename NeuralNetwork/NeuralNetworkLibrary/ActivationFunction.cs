@@ -14,6 +14,9 @@
         public double Function(double input) => function(input);
         public double Derivative(double input) => derivative(input);
 
+        public static ActivationFunction BinaryStep => new(
+            function: (double x) => x < .5 ? 0 : 1,
+            derivative: (double x) => 0);
 
         public static ActivationFunction Identity => new (
                 function: (double x) => x,

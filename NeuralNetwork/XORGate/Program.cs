@@ -14,34 +14,38 @@ namespace XORGate
                 new double[] { 1, 0 },
                 new double[] { 1, 1 }
             };
-            double[] desiredOutputs = { 0, 1, 1, 0 };
+            double[] desiredOutputs = { 0, 0, 0, 0 };
 
             var outputs = new double[4];
 
+
+
             double fitnessFunc(NeuralNetwork net)
             {
-                double error = 0;
                 for (int i = 0; i < outputs.Length; i++)
                 {
-                    var output = net.Compute(inputs[i])[0];
-                    error += net.GetError(outputs, desiredOutputs);
+                    outputs[i] = net.Compute(inputs[i])[0];
                 }
-
-                double fitness = 1 / (error == 0 ? 1 : error);
-
-                Console.WriteLine($"fitness: {fitness}");
-
-                return fitness;
+                return -net.GetError(outputs, desiredOutputs);
             }
 
-            Random random = new('c' + 'a' + 't');
+            Random random = new(/*'c' + 'a' + 't'*/);
 
-            var trainer = new GeneticTrainer(random, networkAmount: 3, neuronsPerLayer: new int[] { 2, 2, 1 },
-                min: 0, max: 1, ActivationFunction.Identity, ErrorFunction.MeanSquaredError, fitnessFunc);
+            var trainer = new GeneticTrainer(random, networkAmount: 100, neuronsPerLayer: new int[] { 2, 2, 1 },
+                min: 0, max: 1, ActivationFunction.Sigmoid, ErrorFunction.MeanSquaredError, fitnessFunc);
 
             while(true)
             {
                 trainer.Train();
+
+                var top = trainer.Networks[0];
+                Console.Clear();
+                for (int i = 0; i < outputs.Length; i++)
+                {
+                    outputs[i] = top.Compute(inputs[i])[0];
+                    Console.WriteLine($"{inputs[i][0]} xor {inputs[i][1]}: {outputs[i]}");
+                }
+                Thread.Sleep(1);
             }
         }
     }

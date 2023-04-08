@@ -1,5 +1,8 @@
-﻿namespace NeuralNetworkLibrary.NetworkStructure
+﻿using System.Diagnostics;
+
+namespace NeuralNetworkLibrary.NetworkStructure
 {
+    [DebuggerDisplay("fitness: {Fitness}")]
     public class NeuralNetwork
     {
         public Layer[] Layers { get; private set; }
@@ -27,6 +30,8 @@
         }
 
         ErrorFunction errorFunc;
+
+        public double Fitness;
 
         public NeuralNetwork(ActivationFunction activationFunc, ErrorFunction errorFunc, params int[] neuronsPerLayer)
         {
