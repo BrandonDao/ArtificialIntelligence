@@ -38,7 +38,7 @@
 
         public double Compute()
         {
-            RawOutput = Bias + Dendrites.Sum((dendrite) => dendrite.Previous.ActivatedOutput);
+            RawOutput = Bias + Dendrites.Sum((dendrite) => dendrite.Previous.ActivatedOutput * dendrite.Weight);
             ActivatedOutput = ActivationFunc.Function(RawOutput);
 
             return ActivatedOutput;

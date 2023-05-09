@@ -11,28 +11,28 @@
 
         public static void PercentChange(Neuron neuron, Random random, double mutationRate)
         {
-            if (random.NextDouble() < mutationRate)
+            if (random.NextDouble() <= mutationRate)
             {
                 neuron.Bias *= random.NextDouble(0.5d, 1.5d);
             }
 
             for (int i = 0; i < neuron.Dendrites.Length; i++)
             {
-                if (random.NextDouble() < mutationRate) continue;
+                if (random.NextDouble() > mutationRate) continue;
 
                 neuron.Dendrites[i].Weight *= random.NextDouble(0.5d, 1.5d);
             }
         }
         public static void FlipSign(Neuron neuron, Random random, double mutationRate)
         {
-            if (random.NextDouble() < mutationRate)
+            if (random.NextDouble() <= mutationRate)
             {
                 neuron.Bias *= -1;
             }
 
             for (int i = 0; i < neuron.Dendrites.Length; i++)
             {
-                if (random.NextDouble() < mutationRate) continue;
+                if (random.NextDouble() > mutationRate) continue;
 
                 neuron.Dendrites[i].Weight *= -1;
             }
@@ -61,7 +61,6 @@
                     }
                 }
             }
-
         }
     }
 }

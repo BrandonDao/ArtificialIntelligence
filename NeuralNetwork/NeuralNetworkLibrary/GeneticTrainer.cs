@@ -1,4 +1,8 @@
 ﻿using NeuralNetworkLibrary.NetworkStructure;
+using System.Net.NetworkInformation;
+using System.Reflection;
+
+using MonkeyNetwork = NeuralNetworkLibrary.NetworkStructure.NeuralNetwork;
 
 namespace NeuralNetworkLibrary
 {
@@ -20,6 +24,9 @@ namespace NeuralNetworkLibrary
 
     public class GeneticTrainer
     {
+        static MonkeyNetwork monke;
+
+        double bestFitness = double.NegativeInfinity;
         public Random Random { get; set; }
 
         public double TopSurvivalThreshold { get; set; } = .10d;
@@ -36,7 +43,7 @@ namespace NeuralNetworkLibrary
         double min;
         double max;
 
-        public GeneticTrainer(Random random, int networkAmount, int[] neuronsPerLayer, double min, double max,
+        public GeneticTrainer(Random random, int networkAmount, int[] neuronsPerLayer, double min, double max, double mutationRate,
             ActivationFunction activationFunction, ErrorFunction errorFunction, Func<NeuralNetwork, double> fitnessFunction)
         {
             Random = random;
@@ -55,7 +62,7 @@ namespace NeuralNetworkLibrary
             Mutator.PossibleMutations.Add(Mutator.PercentChange);
             Mutator.PossibleMutations.Add(Mutator.FlipSign);
 
-            MutationRate = 1;
+            MutationRate = mutationRate;
 
             this.fitnessFunction = fitnessFunction;
             comparer = new NeuralNetworkComparer();
@@ -64,20 +71,27 @@ namespace NeuralNetworkLibrary
         // layer crossover
         public void Crossover(Random random, int topCount, int bottomCount)
         {
-            for (int l = topCount; l < Networks.Length - bottomCount; l++)
+            for (int netIndex = topCount; netIndex < Networks.Length - bottomCount; netIndex++)
             {
-                int layerIndex = random.Next(1, Networks[l].Layers.Length);
+                NeuralNetwork goodNet = Networks[random.Next(0, 1)]; // <----- hardcoded to only crossover from top net
+                NeuralNetwork badNet = Networks[netIndex];
 
-                Layer badLayer = Networks[l].Layers[layerIndex];
-                Layer goodLayer = Networks[random.Next(0, topCount)].Layers[layerIndex];
-
-                for (int n = 0; n < badLayer.Neurons.Length; n++)
+                for(int layerIndex = 1; layerIndex < badNet.Layers.Length; layerIndex++)
                 {
-                    badLayer.Neurons[n].Bias = goodLayer.Neurons[n].Bias;
+                    Layer goodLayer = goodNet.Layers[layerIndex];
+                    Layer badLayer = badNet.Layers[layerIndex];
 
-                    for (int d = 0; d < badLayer.Neurons[n].Dendrites.Length; d++)
+                    for (int neuronIndex = random.Next(0, badLayer.Neurons.Length); neuronIndex < badLayer.Neurons.Length; neuronIndex++)
                     {
-                        badLayer.Neurons[n].Dendrites[d].Weight = goodLayer.Neurons[n].Dendrites[d].Weight;
+                        Neuron goodNeuron = goodLayer.Neurons[neuronIndex];
+                        Neuron badNeuron = badLayer.Neurons[neuronIndex];
+                        
+                        badNeuron.Bias = goodNeuron.Bias;
+
+                        for(int dendriteIndex = 0; dendriteIndex < badNeuron.Dendrites.Length; dendriteIndex++)
+                        {
+                            badNeuron.Dendrites[dendriteIndex].Weight = goodNeuron.Dendrites[dendriteIndex].Weight;
+                        }
                     }
                 }
             }
@@ -91,7 +105,10 @@ namespace NeuralNetworkLibrary
             }
 
             Array.Sort(Networks, comparer);
-
+            if (bestFitness < Networks[0].Fitness)
+            {
+                bestFitness = Networks[0].Fitness;                
+            }
             int topCount = (int)(Networks.Length * TopSurvivalThreshold);
             int bottomCount = (int)(Networks.Length * BottomSurvivalThreshold);
 
@@ -102,7 +119,7 @@ namespace NeuralNetworkLibrary
                 Mutator.Mutate(Networks[i], Random, MutationRate);
             }
 
-            for (int i = bottomCount; i < Networks.Length; i++)
+            for (int i = Networks.Length - bottomCount; i < Networks.Length; i++)
             {
                 Networks[i].Randomize(Random, min, max);
             }

@@ -14,7 +14,7 @@ namespace XORGate
                 new double[] { 1, 0 },
                 new double[] { 1, 1 }
             };
-            double[] desiredOutputs = { 0, 0, 0, 0 };
+            double[] desiredOutputs = { 0, 1, 1, 0 };
 
             var outputs = new double[4];
 
@@ -32,8 +32,11 @@ namespace XORGate
             Random random = new(/*'c' + 'a' + 't'*/);
 
             var trainer = new GeneticTrainer(random, networkAmount: 100, neuronsPerLayer: new int[] { 2, 2, 1 },
-                min: 0, max: 1, ActivationFunction.Sigmoid, ErrorFunction.MeanSquaredError, fitnessFunc);
+                min: -1, max: 1, mutationRate: .5f, ActivationFunction.TanH, ErrorFunction.MeanSquaredError, fitnessFunc);
 
+
+            bool slow = false;
+            double[] oldOutputs = null;
             while(true)
             {
                 trainer.Train();
@@ -43,9 +46,17 @@ namespace XORGate
                 for (int i = 0; i < outputs.Length; i++)
                 {
                     outputs[i] = top.Compute(inputs[i])[0];
-                    Console.WriteLine($"{inputs[i][0]} xor {inputs[i][1]}: {outputs[i]}");
                 }
+
+                for (int i = 0; i < outputs.Length; i++)
+                {
+                    Console.WriteLine($"{inputs[i][0]} xor {inputs[i][1]}: {Math.Round(outputs[i], 2)}");
+                    Console.WriteLine($"error:   {Math.Round(trainer.Networks[0].GetError(new double[] { outputs[i] }, new double[] { desiredOutputs[i] }), 2)}\n");
+                }
+
                 Thread.Sleep(1);
+
+                oldOutputs = (double[])outputs.Clone();
             }
         }
     }

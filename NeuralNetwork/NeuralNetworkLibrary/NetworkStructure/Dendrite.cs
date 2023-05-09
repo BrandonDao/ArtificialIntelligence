@@ -1,5 +1,8 @@
-﻿namespace NeuralNetworkLibrary.NetworkStructure
+﻿using System.Diagnostics;
+
+namespace NeuralNetworkLibrary.NetworkStructure
 {
+    [DebuggerDisplay ("Weight: {Weight}")]
     public class Dendrite
     {
         public Neuron Previous { get; }
