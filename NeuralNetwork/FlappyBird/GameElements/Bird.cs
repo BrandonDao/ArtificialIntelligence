@@ -2,32 +2,34 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Diagnostics;
 
-namespace FlappyBird
+namespace FlappyBird.GameElements
 {
+    [DebuggerDisplay("Y: {Position.Y}")]
     public class Bird
     {
         public Point Position => position;
         public bool IsDead { get; set; }
-         
-        private const int GravityAcceleration = -3;
-        private const int JumpVelocity = 9;
-        private const int MaxVelocity = 12;
 
-        private readonly TimeSpan gravityApplicationTime;
-        private TimeSpan gravityApplicationTimer;
+        protected const int GravityAcceleration = -3;
+        protected const int JumpVelocity = 9;
+        protected const int MaxVelocity = 12;
 
-        private readonly Animation flapAnimation;
-        private Texture2D currentTexture;
+        protected readonly TimeSpan gravityApplicationTime;
+        protected TimeSpan gravityApplicationTimer;
 
-        private readonly int screenHeight;
-        private readonly int width;
-        private readonly int height;
+        protected readonly Animation flapAnimation;
+        protected Texture2D currentTexture;
 
-        private Point position;
-        private int yVelocity;
+        protected readonly int screenHeight;
+        protected readonly int width;
+        protected readonly int height;
 
-        private Rectangle hitbox;
+        protected Point position;
+        protected int yVelocity;
+
+        protected Rectangle hitbox;
 
         public Bird(Animation flapAnimation, float textureScale, int xPosition, int screenHeight)
         {
@@ -35,21 +37,20 @@ namespace FlappyBird
             gravityApplicationTimer = TimeSpan.Zero;
 
             this.flapAnimation = flapAnimation;
+            currentTexture = flapAnimation.AnimationTextures[0];
 
             this.screenHeight = screenHeight;
             width = (int)(flapAnimation.AnimationTextures[0].Width * textureScale);
             height = (int)(flapAnimation.AnimationTextures[0].Height * textureScale);
 
-            position = new Point(xPosition, (screenHeight / 2) - (height / 2));
+            position = new Point(xPosition, screenHeight / 2 - height / 2);
             yVelocity = 0;
 
             hitbox = new Rectangle(Position.X, Position.Y, width, height);
         }
 
-        public void Update(TimeSpan elapsedGameTime, KeyboardState keyboardState, KeyboardState previousKeyboardState, Pipe nearestPipe)
+        public virtual void Update(TimeSpan elapsedGameTime, KeyboardState keyboardState, KeyboardState previousKeyboardState, Pipe closestPipe)
         {
-            if (IsDead) return;
-
             gravityApplicationTimer += elapsedGameTime;
 
             if (keyboardState.IsKeyDown(Keys.Space) && previousKeyboardState.IsKeyUp(Keys.Space))
@@ -76,13 +77,13 @@ namespace FlappyBird
             }
             else if (position.Y + height > screenHeight)
             {
-                position.Y = (screenHeight / 2) - (height / 2);
+                position.Y = screenHeight / 2 - height / 2;
                 IsDead = true;
             }
 
-            if(hitbox.Intersects(nearestPipe.TopHithox) || hitbox.Intersects(nearestPipe.BottomHitbox))
+            if (hitbox.Intersects(closestPipe.TopHithox) || hitbox.Intersects(closestPipe.BottomHitbox))
             {
-                position.Y = (screenHeight / 2) - (height / 2);
+                position.Y = screenHeight / 2 - height / 2;
                 IsDead = true;
             }
 
@@ -92,6 +93,10 @@ namespace FlappyBird
         }
 
         public void Draw(SpriteBatch spriteBatch)
-            => spriteBatch.Draw(currentTexture, hitbox, IsDead ? Color.Red : Color.White);
+        {
+            if (IsDead) return;
+
+            spriteBatch.Draw(currentTexture, hitbox, Color.White);
+        }
     }
 }

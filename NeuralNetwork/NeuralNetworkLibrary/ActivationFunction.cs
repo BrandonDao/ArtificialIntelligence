@@ -26,11 +26,11 @@
             function: SigmoidFunc,
             derivative: (double x) => SigmoidFunc(x) * SigmoidFunc(1 - x));
 
-        public static ActivationFunction TanH = new(
+        public static ActivationFunction TanH => new(
             function: TanHFunc,
             derivative: (double x) => 1 - Math.Pow(TanHFunc(x), 2));
 
-        public static ActivationFunction ReLU = new(
+        public static ActivationFunction ReLU => new(
             function: (double x) => x < 0 ? 0 : x,
             derivative: (double x) => x < 0 ? 0 : 1);
 

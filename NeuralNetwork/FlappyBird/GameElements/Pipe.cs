@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace FlappyBird
+namespace FlappyBird.GameElements
 {
     public class Pipe
     {
@@ -13,7 +13,7 @@ namespace FlappyBird
 
         public Rectangle TopHithox;
         public Rectangle BottomHitbox;
-        
+
         private static Random random;
         private static int screenHeight;
 
@@ -59,13 +59,11 @@ namespace FlappyBird
                 width: GapWidth,
                 height: Texture.Height);
         }
-        public bool Update()
+        public void Update()
         {
             centerGapPos.X -= velocity;
             TopHithox.X -= velocity;
             BottomHitbox.X -= velocity;
-
-            return (TopHithox.X + TopHithox.Width) < 0;
         }
 
         public void Draw(SpriteBatch spritebatch)

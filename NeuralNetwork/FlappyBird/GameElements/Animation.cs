@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace FlappyBird
+namespace FlappyBird.GameElements
 {
     public class Animation
     {
@@ -33,12 +33,11 @@ namespace FlappyBird
             if (hasFinishedAnimation) return;
 
 
-
             currentTexture = AnimationTextures[animationIndex];
-            
+
             Timer += elapsedGameTime;
 
-            if(Timer > TimePerFrame)
+            if (Timer > TimePerFrame)
             {
                 Timer = TimeSpan.Zero;
                 animationIndex++;

@@ -29,7 +29,7 @@ namespace NeuralNetworkLibrary.NetworkStructure
             }
         }
 
-        ErrorFunction errorFunc;
+        private readonly ErrorFunction errorFunc;
 
         public double Fitness;
 

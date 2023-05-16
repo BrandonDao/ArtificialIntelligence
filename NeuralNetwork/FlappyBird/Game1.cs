@@ -1,22 +1,34 @@
-﻿using Microsoft.Xna.Framework;
+﻿using FlappyBird.GameElements;
+using FlappyBird.NetworkElements;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace FlappyBird
 {
     public class Game1 : Game
     {
-        private GraphicsDeviceManager graphics;
+        private readonly GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
         private KeyboardState previousKeyboardState;
 
-        private Bird bird;
+        private Pigeon[] birds;
         private List<Pipe> Pipes;
-        
+        private int closestPipeIndex;
+
+        private PigeonTrainer trainer;
+
+        private enum GameStates
+        {
+            Waiting,
+            Playing,
+        }
+
+        private GameStates gameState;
+
 
         public Game1()
         {
@@ -27,6 +39,7 @@ namespace FlappyBird
 
         protected override void Initialize()
         {
+            gameState = GameStates.Waiting;
 
             base.Initialize();
         }
@@ -41,9 +54,8 @@ namespace FlappyBird
 
             Texture2D pipeTexture = Content.Load<Texture2D>("pipe-green");
 
-
             Pipe.InitializeSharedData(pipeTexture, gapHeight: 125, gapWidth: 75, HeightOfScreen: graphics.PreferredBackBufferHeight);
-            
+
             Pipes = new List<Pipe>()
             {
                 new Pipe(600, 5),
@@ -52,25 +64,20 @@ namespace FlappyBird
                 new Pipe(1500, 5),
             };
 
-            bird = new Bird(
-                flapAnimation: new Animation(
-                    animationTextures: new Texture2D[] { downFlap, midFlap, upFlap },
-                    timePerFrame: TimeSpan.FromMilliseconds(100)),
-                textureScale: 1,
-                xPosition: 100,
-                screenHeight: graphics.PreferredBackBufferHeight);
-        }
+            birds = new Pigeon[100];
 
-        private void ResetPipes()
-        {
-            Pipes.Clear();
-            int pos = 600;
-
-            for(int i = 0; i < Pipes.Count; i++)
+            for (int i = 0; i < birds.Length; i++)
             {
-                Pipes[i].Reset(pos);
-                pos += 300;
+                birds[i] = (new Pigeon(
+                    flapAnimation: new Animation(
+                        animationTextures: new Texture2D[] { downFlap, midFlap, upFlap },
+                        timePerFrame: TimeSpan.FromMilliseconds(100)),
+                    textureScale: 1,
+                    xPosition: 100,
+                    screenHeight: graphics.PreferredBackBufferHeight));
             }
+
+            trainer = new PigeonTrainer(new Random('c' + 'a' + 't'), birds, mutationRate: .5f, min: 0, max: 1);
         }
 
         protected override void Update(GameTime gameTime)
@@ -79,23 +86,63 @@ namespace FlappyBird
 
             if (keyboardState.IsKeyDown(Keys.Escape)) Exit();
 
-
-            bool hasPipeGoneOffscreen = false;
-            foreach(Pipe pipe in Pipes)
+            switch (gameState)
             {
-                if (pipe.Update())
-                {
-                    hasPipeGoneOffscreen = true;
-                }
-            }
+                case GameStates.Waiting:
+                    if (true /*keyboardState.IsKeyDown(Keys.Space)*/)
+                    {
+                        closestPipeIndex = 0;
+                        gameState = GameStates.Playing;
+                        foreach (var bird in birds)
+                        {
+                            bird.Score = 0;
+                            bird.Update(gameTime.ElapsedGameTime, keyboardState, previousKeyboardState, Pipes[closestPipeIndex]);
+                        }
+                    }
+                    break;
 
-            if(hasPipeGoneOffscreen)
-            {
-                Pipes[0].Reset(Pipes[^1].GapPosition.X + 300);
-            }
+                case GameStates.Playing:
+                    foreach (var pipe in Pipes)
+                    {
+                        pipe.Update();
+                    }
 
-            bird.Update(gameTime.ElapsedGameTime, keyboardState, previousKeyboardState, nearestPipe: Pipes[0]);
-            
+                    Rectangle closestPipeHitbox = Pipes[closestPipeIndex].TopHithox;
+                    if (closestPipeHitbox.X + closestPipeHitbox.Width < 0)
+                    {
+                        Pipes[closestPipeIndex].Reset(xPosition: 1165);
+
+                        closestPipeIndex++;
+                        if(closestPipeIndex == Pipes.Count)
+                        {
+                            closestPipeIndex = 0;
+                        }
+                    }
+
+                    bool isAnythingAlive = false;
+                    foreach (var bird in birds)
+                    {
+                        bird.Update(gameTime.ElapsedGameTime, keyboardState, previousKeyboardState, Pipes[closestPipeIndex]);
+
+                        if (!bird.IsDead)
+                        {
+                            isAnythingAlive = true;
+                        }
+                    }
+
+                    if (!isAnythingAlive)
+                    {
+                        gameState = GameStates.Waiting;
+
+                        trainer.Train();
+
+                        Pipes[0].Reset(600);
+                        Pipes[1].Reset(900);
+                        Pipes[2].Reset(1200);
+                        Pipes[3].Reset(1500);
+                    }
+                    break;
+            }
 
             previousKeyboardState = keyboardState;
             base.Update(gameTime);
@@ -106,12 +153,16 @@ namespace FlappyBird
             GraphicsDevice.Clear(Color.Black);
             spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-            bird.Draw(spriteBatch);
-
-            foreach(Pipe pipe in Pipes)
+            foreach (Pipe pipe in Pipes)
             {
                 pipe.Draw(spriteBatch);
             }
+
+            foreach (var bird in birds)
+            {
+                bird.Draw(spriteBatch);
+            }
+
 
             spriteBatch.End();
             base.Draw(gameTime);

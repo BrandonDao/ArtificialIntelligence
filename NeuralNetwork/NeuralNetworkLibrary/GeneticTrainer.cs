@@ -1,8 +1,4 @@
 ﻿using NeuralNetworkLibrary.NetworkStructure;
-using System.Net.NetworkInformation;
-using System.Reflection;
-
-using MonkeyNetwork = NeuralNetworkLibrary.NetworkStructure.NeuralNetwork;
 
 namespace NeuralNetworkLibrary
 {
@@ -24,8 +20,6 @@ namespace NeuralNetworkLibrary
 
     public class GeneticTrainer
     {
-        static MonkeyNetwork monke;
-
         double bestFitness = double.NegativeInfinity;
         public Random Random { get; set; }
 
@@ -37,11 +31,12 @@ namespace NeuralNetworkLibrary
         public Mutator Mutator { get; set; }
 
         public NeuralNetwork[] Networks;
-        NeuralNetworkComparer comparer;
-        Func<NeuralNetwork, double> fitnessFunction;
+        
+        private readonly NeuralNetworkComparer comparer;
+        private readonly Func<NeuralNetwork, double> fitnessFunction;
 
-        double min;
-        double max;
+        private readonly double min;
+        private readonly double max;
 
         public GeneticTrainer(Random random, int networkAmount, int[] neuronsPerLayer, double min, double max, double mutationRate,
             ActivationFunction activationFunction, ErrorFunction errorFunction, Func<NeuralNetwork, double> fitnessFunction)
@@ -73,7 +68,7 @@ namespace NeuralNetworkLibrary
         {
             for (int netIndex = topCount; netIndex < Networks.Length - bottomCount; netIndex++)
             {
-                NeuralNetwork goodNet = Networks[random.Next(0, 1)]; // <----- hardcoded to only crossover from top net
+                NeuralNetwork goodNet = Networks[random.Next(0, topCount)];
                 NeuralNetwork badNet = Networks[netIndex];
 
                 for(int layerIndex = 1; layerIndex < badNet.Layers.Length; layerIndex++)

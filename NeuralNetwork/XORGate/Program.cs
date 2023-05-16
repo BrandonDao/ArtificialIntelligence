@@ -29,14 +29,12 @@ namespace XORGate
                 return -net.GetError(outputs, desiredOutputs);
             }
 
-            Random random = new(/*'c' + 'a' + 't'*/);
+            Random random = new();
 
             var trainer = new GeneticTrainer(random, networkAmount: 100, neuronsPerLayer: new int[] { 2, 2, 1 },
                 min: -1, max: 1, mutationRate: .5f, ActivationFunction.TanH, ErrorFunction.MeanSquaredError, fitnessFunc);
 
 
-            bool slow = false;
-            double[] oldOutputs = null;
             while(true)
             {
                 trainer.Train();
@@ -55,8 +53,6 @@ namespace XORGate
                 }
 
                 Thread.Sleep(1);
-
-                oldOutputs = (double[])outputs.Clone();
             }
         }
     }
