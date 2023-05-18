@@ -1,4 +1,6 @@
 ﻿using FlappyBird.GameElements;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using NeuralNetworkLibrary;
 using NeuralNetworkLibrary.NetworkStructure;
@@ -28,11 +30,11 @@ namespace FlappyBird.NetworkElements
 
             Score++;
 
-            inputs[0] = (closestPipe.GapPosition.X - Position.X) / 1000f; // x distance to pipe
-            inputs[1] = (closestPipe.GapPosition.Y - Position.Y) / 800f; // y distance
+            inputs[0] = (closestPipe.GapPosition.X - Position.X) / 600f; // x distance to pipe
+            inputs[1] = (closestPipe.GapPosition.Y - Position.Y) / 480f; // y distance
             inputs[2] = yVelocity;
 
-            bool willJump = Network.Compute(inputs)[0] > .5;
+            bool willJump = Network.Compute(inputs)[0] > 0.5f;
 
 
             gravityApplicationTimer += elapsedGameTime;
@@ -54,12 +56,7 @@ namespace FlappyBird.NetworkElements
             }
 
             position.Y -= yVelocity;
-            if (position.Y < 0)
-            {
-                position.Y = 0;
-                yVelocity = 0;
-            }
-            else if (position.Y + height > screenHeight)
+            if (position.Y < 0 || position.Y + height > screenHeight)
             {
                 position.Y = screenHeight / 2 - height / 2;
                 IsDead = true;

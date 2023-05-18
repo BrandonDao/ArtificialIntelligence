@@ -15,7 +15,7 @@ namespace FlappyBird.NetworkElements
         double bestFitness = double.NegativeInfinity;
         public Random Random { get; set; }
 
-        public double TopSurvivalThreshold { get; set; } = .10d;
+        public double TopSurvivalThreshold { get; set; } = .03d;
         public double BottomSurvivalThreshold { get; set; } = .10d;
 
         public double MutationRate { get; set; }

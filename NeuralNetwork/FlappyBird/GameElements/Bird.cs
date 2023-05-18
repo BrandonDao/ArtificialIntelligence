@@ -13,7 +13,7 @@ namespace FlappyBird.GameElements
         public bool IsDead { get; set; }
 
         protected const int GravityAcceleration = -3;
-        protected const int JumpVelocity = 9;
+        protected const int JumpVelocity = 7;
         protected const int MaxVelocity = 12;
 
         protected readonly TimeSpan gravityApplicationTime;
@@ -92,7 +92,7 @@ namespace FlappyBird.GameElements
             flapAnimation.Update(elapsedGameTime, ref currentTexture);
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public virtual void Draw(SpriteBatch spriteBatch)
         {
             if (IsDead) return;
 
