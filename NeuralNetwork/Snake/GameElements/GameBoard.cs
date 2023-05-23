@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace Snake.GameElements
@@ -8,30 +10,38 @@ namespace Snake.GameElements
     {
         public int Size { get; private set; }
         public int CellSize { get; private set; }
+        public bool IsSnakeDead => snake.IsDead;
 
-        private Texture2D texture;
-        private Rectangle drawDestination;
+        private readonly Texture2D texture;
+        private readonly Rectangle drawDestination;
 
-        private Snake Snake;
-        private Food Food;
+        private Snake snake;
+        private Food food;
 
-        public GameBoard(int boardSize, int cellSize, Point drawOffset, Texture2D boardTexture, Texture2D foodTexture)
+        public GameBoard(int boardSize, int cellSize, Texture2D boardTexture, Texture2D foodTexture, Texture2D snakeHeadTexture)
         {
             Size = boardSize;
             CellSize = cellSize;
 
             texture = boardTexture;
-            drawDestination = new Rectangle(drawOffset.X * cellSize * boardSize, drawOffset.Y * cellSize * boardSize, Size * CellSize, Size * CellSize);
+            drawDestination = new Rectangle(0, 0, Size * CellSize, Size * CellSize);
 
-            Food = new Food(foodTexture, boardSize, cellSize, new List<Point>());
+            food = new Food(foodTexture, boardSize, cellSize, new Point(-1), new List<Point>());
+            snake = new Snake(snakeHeadTexture, cellSize, Size, movementsPerSecond: 10);
         }
 
+        public void Reset() => snake.Reset();
+        public void Update(TimeSpan elapsedGameTime, KeyboardState keyboardState)
+        {
+            if(!snake.IsDead) snake.Update(elapsedGameTime, keyboardState, food);
+        }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(texture, drawDestination, Color.White);
-            
-            Food.Draw(spriteBatch);
+
+            snake.Draw(spriteBatch);
+            food.Draw(spriteBatch);
         }
     }
 }

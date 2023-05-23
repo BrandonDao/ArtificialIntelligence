@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Snake.GameElements;
 using System;
-using System.Collections.Generic;
 
 namespace Snake
 {
@@ -14,6 +13,13 @@ namespace Snake
 
         private Random random;
         private GameBoard gameBoard;
+
+        private enum GameStates
+        {
+            Waiting,
+            Playing,
+        }
+        GameStates gameState;
 
         public Game1()
         {
@@ -41,7 +47,7 @@ namespace Snake
             boardTexture.SetData(new Color[] { Color.Black });
 
 
-            gameBoard = new GameBoard(16, 10, new Point(2, 1), boardTexture, blankTexture);
+            gameBoard = new GameBoard(32, 10, boardTexture, blankTexture, blankTexture);
         }
 
         protected override void Update(GameTime gameTime)
@@ -50,6 +56,25 @@ namespace Snake
 
             if (keyboardState.IsKeyDown(Keys.Escape)) Exit();
 
+            switch (gameState)
+            {
+                case GameStates.Waiting:
+                    if(keyboardState.IsKeyDown(Keys.Space))
+                    {
+                        gameState = GameStates.Playing;
+                    }
+                    break;
+
+                case GameStates.Playing:
+                    gameBoard.Update(gameTime.ElapsedGameTime, keyboardState);
+
+                    if(gameBoard.IsSnakeDead)
+                    {
+                        gameState = GameStates.Playing;
+                        gameBoard.Reset();
+                    }
+                    break;
+            }
 
 
             base.Update(gameTime);

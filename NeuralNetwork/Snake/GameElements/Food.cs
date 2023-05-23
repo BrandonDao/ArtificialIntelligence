@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Snake.GameElements
 {
@@ -16,26 +15,31 @@ namespace Snake.GameElements
         
         private Point position;
         private Rectangle hitbox;
+        private Color color;
 
-        public Food(Texture2D texture, int boardSize, int cellSize, List<Point> snakePositions)
+        public Food(Texture2D texture, int boardSize, int cellSize, Point headPosition, List<Point> bodyPositions)
         {
             this.texture = texture;
 
-            Respawn(boardSize, cellSize, snakePositions);
+            Respawn(boardSize, cellSize, headPosition, bodyPositions);
         }
 
-        public void Respawn(int boardSize, int cellSize, List<Point> snakePositions)
+        public void Respawn(int boardSize, int cellSize, Point headPosition, List<Point> bodyPositions)
         {
             do
             {
                 position = new Point(Random.Next(0, boardSize), Random.Next(0, boardSize));
 
-            } while (snakePositions.Contains(position));
+            } while (bodyPositions.Contains(position) || position == headPosition);
 
             hitbox = new Rectangle(position.X * cellSize, position.Y * cellSize, cellSize, cellSize);
+            color = new Color((uint)Random.Shared.Next())
+            {
+                A = 255
+            };
         }
 
         public void Draw(SpriteBatch spriteBatch)
-            => spriteBatch.Draw(texture, hitbox, Color.White);
+            => spriteBatch.Draw(texture, hitbox, color);
     }
 }

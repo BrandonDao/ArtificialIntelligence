@@ -21,6 +21,8 @@ namespace FlappyBird
 
         private PigeonTrainer trainer;
 
+        private bool isFast;
+
         private enum GameStates
         {
             Waiting,
@@ -58,10 +60,10 @@ namespace FlappyBird
 
             Pipes = new List<Pipe>()
             {
-                new Pipe(600, 5),
-                new Pipe(900, 5),
+                new Pipe(400, 5),
+                new Pipe(800, 5),
                 new Pipe(1200, 5),
-                new Pipe(1500, 5),
+                new Pipe(1600, 5),
             };
 
             birds = new Pigeon[100];
@@ -86,62 +88,68 @@ namespace FlappyBird
 
             if (keyboardState.IsKeyDown(Keys.Escape)) Exit();
 
-            switch (gameState)
+            isFast = keyboardState.IsKeyDown(Keys.Space);
+
+            for (int i = 0; i < (isFast ? 25 : 1); i++)
             {
-                case GameStates.Waiting:
-                    if (true /*keyboardState.IsKeyDown(Keys.Space)*/)
-                    {
-                        closestPipeIndex = 0;
-                        gameState = GameStates.Playing;
-                        foreach (var bird in birds)
-                        {
-                            bird.Score = 0;
-                            bird.Update(gameTime.ElapsedGameTime, keyboardState, previousKeyboardState, Pipes[closestPipeIndex]);
-                        }
-                    }
-                    break;
-
-                case GameStates.Playing:
-                    foreach (var pipe in Pipes)
-                    {
-                        pipe.Update();
-                    }
-
-                    Rectangle closestPipeHitbox = Pipes[closestPipeIndex].TopHithox;
-                    if (closestPipeHitbox.X + closestPipeHitbox.Width < 0)
-                    {
-                        Pipes[closestPipeIndex].Reset(xPosition: 1165);
-
-                        closestPipeIndex++;
-                        if(closestPipeIndex == Pipes.Count)
+                switch (gameState)
+                {
+                    case GameStates.Waiting:
+                        if (true /*keyboardState.IsKeyDown(Keys.Space)*/)
                         {
                             closestPipeIndex = 0;
+                            gameState = GameStates.Playing;
+                            foreach (var bird in birds)
+                            {
+                                bird.Score = 0;
+                                bird.Update(gameTime.ElapsedGameTime, keyboardState, previousKeyboardState, Pipes[closestPipeIndex]);
+                            }
                         }
-                    }
+                        break;
 
-                    bool isAnythingAlive = false;
-                    foreach (var bird in birds)
-                    {
-                        bird.Update(gameTime.ElapsedGameTime, keyboardState, previousKeyboardState, Pipes[closestPipeIndex]);
-
-                        if (!bird.IsDead)
+                    case GameStates.Playing:
+                        foreach (var pipe in Pipes)
                         {
-                            isAnythingAlive = true;
+                            pipe.Update();
                         }
-                    }
 
-                    if (!isAnythingAlive)
-                    {
-                        gameState = GameStates.Waiting;
+                        Rectangle closestPipeHitbox = Pipes[closestPipeIndex].TopHithox;
+                        if (closestPipeHitbox.X + closestPipeHitbox.Width < 0)
+                        {
+                            Pipes[closestPipeIndex].Reset(xPosition: 1560);
 
-                        trainer.Train();
+                            closestPipeIndex++;
+                            if (closestPipeIndex == Pipes.Count)
+                            {
+                                closestPipeIndex = 0;
+                            }
+                        }
 
-                        Pipes[0].Reset(600);
-                        Pipes[1].Reset(900);
-                        Pipes[2].Reset(1200);
-                        Pipes[3].Reset(1500);
-                    }
-                    break;
+                        bool isAnythingAlive = false;
+
+                        foreach (var bird in birds)
+                        {
+                            bird.Update(gameTime.ElapsedGameTime, keyboardState, previousKeyboardState, Pipes[closestPipeIndex]);
+
+                            if (!bird.IsDead)
+                            {
+                                isAnythingAlive = true;
+                            }
+                        }
+
+                        if (!isAnythingAlive)
+                        {
+                            gameState = GameStates.Waiting;
+
+                            trainer.Train();
+
+                            Pipes[0].Reset(400);
+                            Pipes[1].Reset(800);
+                            Pipes[2].Reset(1200);
+                            Pipes[3].Reset(1600);
+                        }
+                        break;
+                }
             }
 
             previousKeyboardState = keyboardState;
