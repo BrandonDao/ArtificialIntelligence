@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Snake.GameElements;
+using Snake.NetworkElements;
 using System;
 
 namespace Snake
@@ -11,15 +11,17 @@ namespace Snake
         private readonly GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
-        private Random random;
-        private GameBoard gameBoard;
+        private const int HabitatDisplayLength = 10;
+        private const int HabitatCount = HabitatDisplayLength * HabitatDisplayLength;
+        private const int HabitatSize = 8;
+        private const int BorderSize = 1;
+        private const int WindowSize = 800;
+        private const int CellSize = 900 / (HabitatDisplayLength * HabitatSize + HabitatDisplayLength * BorderSize);
 
-        private enum GameStates
-        {
-            Waiting,
-            Playing,
-        }
-        GameStates gameState;
+        private NaturalSelection naturalSelection;
+        private Habitat[] Habitats;
+
+        private KeyboardState previousKeyboardState;
 
         public Game1()
         {
@@ -30,8 +32,9 @@ namespace Snake
 
         protected override void Initialize()
         {
-            random = new Random('s' + 'n' + 'a' + 'k' + 'e');
-            Food.Random = random;
+            graphics.PreferredBackBufferWidth = WindowSize;
+            graphics.PreferredBackBufferHeight = WindowSize;
+            graphics.ApplyChanges();
 
             base.Initialize();
         }
@@ -43,11 +46,28 @@ namespace Snake
             Texture2D blankTexture = new(GraphicsDevice, 1, 1);
             blankTexture.SetData(new Color[] { Color.White });
 
-            Texture2D boardTexture = new(GraphicsDevice, 1, 1);
-            boardTexture.SetData(new Color[] { Color.Black });
+            Habitats = new Habitat[HabitatCount];
 
 
-            gameBoard = new GameBoard(32, 10, boardTexture, blankTexture, blankTexture);
+            int x = 0;
+            int y = 0;
+            for (int i = 0; i < HabitatCount; i++)
+            {
+                Point drawOffset = new(
+                    (x * HabitatSize * CellSize) + (x * BorderSize),
+                    (y * HabitatSize * CellSize) + (y * BorderSize));
+
+                Habitats[i] = new Habitat(HabitatSize, CellSize, drawOffset, blankTexture, blankTexture, blankTexture, movementsPerSecond: 10);
+
+                x++;
+                if (x == HabitatDisplayLength)
+                {
+                    x = 0;
+                    y++;
+                }
+            }
+
+            naturalSelection = new NaturalSelection(Random.Shared, Habitats, mutationRate: .5f, min: -1, max: 1);
         }
 
         protected override void Update(GameTime gameTime)
@@ -56,36 +76,44 @@ namespace Snake
 
             if (keyboardState.IsKeyDown(Keys.Escape)) Exit();
 
-            switch (gameState)
+
+            for (int i = 0; i < (keyboardState.IsKeyDown(Keys.Space) ? 500 : 1); i++)
             {
-                case GameStates.Waiting:
-                    if(keyboardState.IsKeyDown(Keys.Space))
-                    {
-                        gameState = GameStates.Playing;
-                    }
-                    break;
+                bool isAllDead = true;
 
-                case GameStates.Playing:
-                    gameBoard.Update(gameTime.ElapsedGameTime, keyboardState);
+                foreach (var board in Habitats)
+                {
+                    board.Update(gameTime.ElapsedGameTime);
 
-                    if(gameBoard.IsSnakeDead)
+                    if (!board.IsSnakeDead)
                     {
-                        gameState = GameStates.Playing;
-                        gameBoard.Reset();
+                        isAllDead = false;
                     }
-                    break;
+                }
+
+                if (isAllDead || (keyboardState.IsKeyDown(Keys.Enter) && previousKeyboardState.IsKeyUp(Keys.Enter)))
+                {
+                    foreach (var board in Habitats)
+                    {
+                        board.Reset();
+                    }
+                    naturalSelection.Select();
+                }
             }
 
-
+            previousKeyboardState = keyboardState;
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.DimGray);
             spriteBatch.Begin();
 
-            gameBoard.Draw(spriteBatch);
+            foreach (var board in Habitats)
+            {
+                board.Draw(spriteBatch);
+            }
 
             spriteBatch.End();
             base.Draw(gameTime);

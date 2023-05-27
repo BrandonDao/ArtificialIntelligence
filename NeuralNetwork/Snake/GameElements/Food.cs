@@ -1,42 +1,41 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Snake.NetworkElements;
 using System;
-using System.Collections.Generic;
 
 namespace Snake.GameElements
 {
     public class Food
     {
-        public static Random Random { get; set; }
-
         public Point Position => position;
 
         private readonly Texture2D texture;
-        
+        private readonly Point drawOffset;
+
         private Point position;
         private Rectangle hitbox;
         private Color color;
 
-        public Food(Texture2D texture, int boardSize, int cellSize, Point headPosition, List<Point> bodyPositions)
+        public Food(Texture2D texture, double[,] board, int cellSize, Point drawOffset, Color color)
         {
             this.texture = texture;
+            this.drawOffset = drawOffset;
 
-            Respawn(boardSize, cellSize, headPosition, bodyPositions);
+            Respawn(board, cellSize, color);
         }
 
-        public void Respawn(int boardSize, int cellSize, Point headPosition, List<Point> bodyPositions)
+        public void Respawn(double[,] board, int cellSize, Color color)
         {
+            int boardSize = board.GetLength(0);
+
             do
             {
-                position = new Point(Random.Next(0, boardSize), Random.Next(0, boardSize));
+                position = new Point(Random.Shared.Next(0, boardSize), Random.Shared.Next(0, boardSize));
 
-            } while (bodyPositions.Contains(position) || position == headPosition);
+            } while (board[position.X, position.Y] != Cell.Empty);
 
-            hitbox = new Rectangle(position.X * cellSize, position.Y * cellSize, cellSize, cellSize);
-            color = new Color((uint)Random.Shared.Next())
-            {
-                A = 255
-            };
+            hitbox = new Rectangle(drawOffset.X + position.X * cellSize, drawOffset.Y + position.Y * cellSize, cellSize, cellSize);
+            this.color = color;
         }
 
         public void Draw(SpriteBatch spriteBatch)
