@@ -19,7 +19,7 @@ namespace Snake.NetworkElements
     {
         public int Size { get; private set; }
         public int CellSize { get; private set; }
-        public double[,] Board { get; private set; }
+        public double[][] Board { get; private set; }
 
         public Point DrawOffset { get; set; }
 
@@ -37,12 +37,14 @@ namespace Snake.NetworkElements
 
             DrawOffset = drawOffset;
 
-            Board = new double[boardSize, boardSize];
+            Board = new double[boardSize][];
             for (int x = 0; x < boardSize; x++)
             {
+                Board[x] = new double[boardSize];
+
                 for (int y = 0; y < boardSize; y++)
                 {
-                    Board[x, y] = Cell.Empty;
+                    Board[x][y] = Cell.Empty;
                 }
             }
 

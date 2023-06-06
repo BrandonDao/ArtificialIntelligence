@@ -12,11 +12,10 @@ namespace Snake.NetworkElements
 
     public class NaturalSelection
     {
-        double bestFitness = double.NegativeInfinity;
         public Random Random { get; set; }
 
-        public double TopSurvivalThreshold { get; set; } = .10d;
-        public double BottomSurvivalThreshold { get; set; } = .10d;
+        public const double TopSurvivalThreshold = .10d;
+        public const double BottomSurvivalThreshold = .10d;
 
         public double MutationRate { get; set; }
 
@@ -28,6 +27,16 @@ namespace Snake.NetworkElements
 
         private readonly double min;
         private readonly double max;
+
+        public NaturalSelection(Random random, Mutator mutator, Habitat[] habitats, double mutationRate, double min, double max)
+        {
+            Random = random;
+            Mutator = mutator;
+            Habitats = habitats;
+            MutationRate = mutationRate;
+            this.min = min;
+            this.max = max;
+        }
 
         public NaturalSelection(Random random, Habitat[] habitats, double mutationRate, double min, double max)
         {
@@ -83,10 +92,6 @@ namespace Snake.NetworkElements
         public void Select()
         {
             Array.Sort(Habitats, comparer);
-            if (bestFitness < Habitats[0].Python.Score)
-            {
-                bestFitness = Habitats[0].Python.Score;
-            }
             int topCount = (int)(Habitats.Length * TopSurvivalThreshold);
             int bottomCount = (int)(Habitats.Length * BottomSurvivalThreshold);
 

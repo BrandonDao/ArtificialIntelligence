@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Snake.NetworkElements;
 using System;
+using System.Text;
+using System.Text.Json;
 
 namespace Snake
 {
@@ -16,7 +18,13 @@ namespace Snake
         private const int HabitatSize = 8;
         private const int BorderSize = 1;
         private const int WindowSize = 800;
-        private const int CellSize = 900 / (HabitatDisplayLength * HabitatSize + HabitatDisplayLength * BorderSize);
+        private const int CellSize = 950 / (HabitatDisplayLength * HabitatSize + HabitatDisplayLength * BorderSize) - 1;
+
+        private const int MovementsPerSecond = 10;
+
+        private const double MutationRate = 0.5f;
+        private const double min = -1;
+        private const double max = 1;
 
         private NaturalSelection naturalSelection;
         private Habitat[] Habitats;
@@ -57,7 +65,7 @@ namespace Snake
                     (x * HabitatSize * CellSize) + (x * BorderSize),
                     (y * HabitatSize * CellSize) + (y * BorderSize));
 
-                Habitats[i] = new Habitat(HabitatSize, CellSize, drawOffset, blankTexture, blankTexture, blankTexture, movementsPerSecond: 10);
+                Habitats[i] = new Habitat(HabitatSize, CellSize, drawOffset, blankTexture, blankTexture, blankTexture, MovementsPerSecond);
 
                 x++;
                 if (x == HabitatDisplayLength)
@@ -67,7 +75,7 @@ namespace Snake
                 }
             }
 
-            naturalSelection = new NaturalSelection(Random.Shared, Habitats, mutationRate: .5f, min: -1, max: 1);
+            naturalSelection = new NaturalSelection(Random.Shared, Habitats, MutationRate, min, max);
         }
 
         protected override void Update(GameTime gameTime)
@@ -77,7 +85,7 @@ namespace Snake
             if (keyboardState.IsKeyDown(Keys.Escape)) Exit();
 
 
-            for (int i = 0; i < (keyboardState.IsKeyDown(Keys.Space) ? 500 : 1); i++)
+            for (int i = 0; i < (keyboardState.IsKeyDown(Keys.Space) ? 100 : 1); i++)
             {
                 bool isAllDead = true;
 
@@ -103,6 +111,48 @@ namespace Snake
 
             previousKeyboardState = keyboardState;
             base.Update(gameTime);
+        }
+
+        protected override void OnExiting(object sender, EventArgs args)
+        {
+            StringBuilder builder = new();
+
+            /*
+             * habitat count
+             *      draw offset x
+             *      draw offset y
+             * 
+             * random
+             * mutator
+             * 
+             * activation func
+             * error func
+             * 
+             * layer count
+             *      input layer neuron count
+             *          bias
+             *          dendrite count
+             *              weight
+             *      hidden layer neuron count
+             *          ...
+             *      output layer neuron count
+             */
+
+            builder.Append(HabitatCount);
+            foreach(var habitat in naturalSelection.Habitats)
+            {
+                builder.Append(habitat.DrawOffset.X);
+                builder.Append(habitat.DrawOffset.Y);
+            }
+
+            builder.Append();
+
+
+            builder.Append(JsonSerializer.Serialize(naturalSelection.Random));
+            builder.Append(JsonSerializer.Serialize(naturalSelection.Mutator));
+
+
+            base.OnExiting(sender, args);
         }
 
         protected override void Draw(GameTime gameTime)

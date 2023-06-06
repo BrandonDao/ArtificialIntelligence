@@ -34,7 +34,7 @@ namespace Snake.NetworkElements
         private readonly TimeSpan timePerFrame;
         private TimeSpan updateTimer;
 
-        private LinkedList<Point> positions;
+        public LinkedList<Point> Positions { get; private set; }
 
         private readonly double[] inputs;
 
@@ -48,7 +48,8 @@ namespace Snake.NetworkElements
             Directions.Right
         };
 
-        public Python(double[,] board, int cellSize, Point drawOffset, Texture2D texture, int movementsPerSecond)
+        public Python() { }
+        public Python(double[][] board, int cellSize, Point drawOffset, Texture2D texture, int movementsPerSecond)
         {
             this.texture = texture;
             this.cellSize = cellSize;
@@ -58,12 +59,12 @@ namespace Snake.NetworkElements
             timePerFrame = TimeSpan.FromMilliseconds(1000f / movementsPerSecond);
             updateTimer = TimeSpan.Zero;
 
-            positions = new LinkedList<Point>();
+            Positions = new LinkedList<Point>();
             Reset(board);
 
             Direction = Directions.Right;
 
-            int inputCount = 4 + board.Length; // head position + food position + every position on the board
+            int inputCount = 4 + (board.Length * board.Length); // head position + food position + every position on the board
 
             Network = new NeuralNetwork(ActivationFunction.TanH, ErrorFunction.MeanSquaredError, neuronsPerLayer: new int[] { inputCount, 80, outputCount });
             Score = 0;
@@ -71,29 +72,30 @@ namespace Snake.NetworkElements
             inputs = new double[inputCount];
             outputs = new double[outputCount];
         }
-        public void Reset(double[,] board)
+
+        public void Reset(double[][] board)
         {
             IsDead = false;
 
-            foreach (var pos in positions)
+            foreach (var pos in Positions)
             {
-                board[pos.X, pos.Y] = Cell.Empty;
+                board[pos.X][pos.Y] = Cell.Empty;
             }
 
-            positions.Clear();
+            Positions.Clear();
             Point headPosition = new(boardSize / 2);
 
             for (int i = 0; i < startingBodySize; i++)
             {
-                positions.AddLast(new Point(headPosition.X - i, headPosition.Y));
-                board[positions.Last.Value.X, positions.Last.Value.Y] = Cell.Wall;
+                Positions.AddLast(new Point(headPosition.X - i, headPosition.Y));
+                board[Positions.Last.Value.X][Positions.Last.Value.Y] = Cell.Wall;
             }
 
             Color = new Color((uint)Random.Shared.Next()) { A = 255 };
         }
 
 
-        public void Update(double[,] board, TimeSpan elapsedGameTime, Food food)
+        public void Update(double[][] board, TimeSpan elapsedGameTime, Food food)
         {
             if (IsDead) return;
 
@@ -103,16 +105,16 @@ namespace Snake.NetworkElements
 
             Score++;
 
-            inputs[0] = positions.First.Value.X / (double)boardSize;
-            inputs[1] = positions.First.Value.Y / (double)boardSize;
+            inputs[0] = Positions.First.Value.X / (double)boardSize;
+            inputs[1] = Positions.First.Value.Y / (double)boardSize;
             inputs[3] = food.Position.X / (double)boardSize;
             inputs[4] = food.Position.Y / (double)boardSize;
 
-            for (int x = 0; x < board.GetLength(0); x++)
+            for (int x = 0; x < board.Length; x++)
             {
-                for (int y = 0; y < board.GetLength(1); y++)
+                for (int y = 0; y < board.Length; y++)
                 {
-                    inputs[5 + x + y] = board[x, y];
+                    inputs[5 + x + y] = board[x][y];
                 }
             }
 
@@ -132,8 +134,8 @@ namespace Snake.NetworkElements
 
             updateTimer = TimeSpan.Zero;
 
-            Point newHeadPos = positions.First.Value;
-            board[newHeadPos.X, newHeadPos.Y] = Cell.Wall;
+            Point newHeadPos = Positions.First.Value;
+            board[newHeadPos.X][newHeadPos.Y] = Cell.Wall;
 
             switch (Direction)
             {
@@ -145,28 +147,28 @@ namespace Snake.NetworkElements
 
 
             if (newHeadPos.X < 0 || newHeadPos.X >= boardSize || newHeadPos.Y < 0 || newHeadPos.Y >= boardSize
-                || board[newHeadPos.X, newHeadPos.Y] == Cell.Wall)
+                || board[newHeadPos.X][newHeadPos.Y] == Cell.Wall)
             {
                 IsDead = true;
                 return;
             }
 
-            if (board[newHeadPos.X, newHeadPos.Y] == Cell.Food)
+            if (board[newHeadPos.X][newHeadPos.Y] == Cell.Food)
             {
                 food.Respawn(board, cellSize, Color);
                 //Score += ;
             }
             else
             {
-                positions.RemoveLast();
-                board[positions.Last.Value.X, positions.Last.Value.Y] = Cell.Empty;
+                Positions.RemoveLast();
+                board[Positions.Last.Value.X][Positions.Last.Value.Y] = Cell.Empty;
             }
 
-            positions.AddFirst(newHeadPos);
+            Positions.AddFirst(newHeadPos);
         }
         public void Draw(SpriteBatch spriteBatch)
         {
-            foreach (Point position in positions)
+            foreach (Point position in Positions)
             {
                 var bodyRectangle = new Rectangle(drawOffset.X + position.X * cellSize, drawOffset.Y + position.Y * cellSize, cellSize, cellSize);
                 spriteBatch.Draw(texture, bodyRectangle, Color);
