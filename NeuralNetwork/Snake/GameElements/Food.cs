@@ -26,13 +26,33 @@ namespace Snake.GameElements
 
         public void Respawn(double[][] board, int cellSize, Color color)
         {
+            board[position.X][position.Y] = Cell.Empty;
             int boardSize = board.GetLength(0);
+
+            //do
+            //{
+
+            //    do
+            //    {
+            //        do
+            //        {
+            //            position = new Point(Random.Shared.Next(0, boardSize), Random.Shared.Next(0, boardSize));
+            //        } while (board[position.X][position.Y] != Cell.Wall);
+
+            //        position.X += Random.Shared.Next(0, 2) == 1 ? -1 : 1;
+            //        position.Y += Random.Shared.Next(0, 2) == 1 ? -1 : 1;
+
+            //    } while (!(position.X >= 0 && position.X < board.Length && position.Y >= 0 && position.Y < board[0].Length));
+            //} while (board[position.X][position.Y] != Cell.Empty);
+
 
             do
             {
                 position = new Point(Random.Shared.Next(0, boardSize), Random.Shared.Next(0, boardSize));
 
             } while (board[position.X][position.Y] != Cell.Empty);
+
+            board[position.X][position.Y] = Cell.Food;
 
             hitbox = new Rectangle(drawOffset.X + position.X * cellSize, drawOffset.Y + position.Y * cellSize, cellSize, cellSize);
             this.color = color;

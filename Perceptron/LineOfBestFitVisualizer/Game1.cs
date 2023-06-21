@@ -6,7 +6,8 @@ using NeuralNetworkLibrary;
 using NeuralNetworkLibrary.Perceptrons;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.IO;
+using System.Linq;
 
 namespace LineOfBestFitVisualizer
 {
@@ -92,6 +93,19 @@ namespace LineOfBestFitVisualizer
 
             points = new List<Point>();
             ResetLines();
+
+            var datapoints =
+                File.ReadAllLines(@"C:\Users\brand\Documents\Github\NeuralNetworks\NeuralNetwork\Snake\AverageFitnesses.txt")
+                    .Select((string value) => int.Parse(value)).ToArray();
+
+            int xMax = datapoints.Length;
+            int yMin = datapoints.Min();
+            int yMax = datapoints.Max();
+
+            for(int i = 0; i < datapoints.Length; i++)
+            {
+                points.Add(new Point(i * graphics.PreferredBackBufferWidth / xMax, graphics.PreferredBackBufferHeight - ((datapoints[i] - yMin) * graphics.PreferredBackBufferHeight / yMax)));
+            }
             
             perceptron = GetNewPerceptron();
 
@@ -213,13 +227,13 @@ namespace LineOfBestFitVisualizer
             GraphicsDevice.Clear(Color.Black);
             spriteBatch.Begin();
 
-            calculatedLine.Draw(spriteBatch);
-            approximatedLine.Draw(spriteBatch);
-
             foreach (var plot in points)
             {
                 spriteBatch.DrawCircle(plot.ToVector2(), 5, 10, Color.White, 5);
             }
+
+            calculatedLine.Draw(spriteBatch);
+            approximatedLine.Draw(spriteBatch);
 
 
             spriteBatch.End();

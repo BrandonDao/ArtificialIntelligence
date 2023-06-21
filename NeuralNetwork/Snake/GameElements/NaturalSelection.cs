@@ -1,4 +1,5 @@
-﻿using NeuralNetworkLibrary.NetworkStructure;
+﻿using Microsoft.Xna.Framework;
+using NeuralNetworkLibrary.NetworkStructure;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +16,7 @@ namespace Snake.NetworkElements
         public Random Random { get; set; }
 
         public const double TopSurvivalThreshold = .10d;
-        public const double BottomSurvivalThreshold = .10d;
+        public const double BottomSurvivalThreshold = .25d;
 
         public double MutationRate { get; set; }
 
@@ -28,24 +29,17 @@ namespace Snake.NetworkElements
         private readonly double min;
         private readonly double max;
 
-        public NaturalSelection(Random random, Mutator mutator, Habitat[] habitats, double mutationRate, double min, double max)
-        {
-            Random = random;
-            Mutator = mutator;
-            Habitats = habitats;
-            MutationRate = mutationRate;
-            this.min = min;
-            this.max = max;
-        }
-
-        public NaturalSelection(Random random, Habitat[] habitats, double mutationRate, double min, double max)
+        public NaturalSelection(Random random, Habitat[] habitats, double mutationRate, double min, double max, bool willRandomize)
         {
             Random = random;
 
             Habitats = habitats;
-            foreach (var habitat in Habitats)
+            if (willRandomize)
             {
-                habitat.Python.Network.Randomize(random, min, max);
+                foreach (var habitat in Habitats)
+                {
+                    habitat.Python.Network.Randomize(random, min, max);
+                }
             }
 
             this.min = min;
@@ -73,16 +67,38 @@ namespace Snake.NetworkElements
                     Layer goodLayer = goodNet.Layers[layerIndex];
                     Layer badLayer = badNet.Layers[layerIndex];
 
-                    for (int neuronIndex = random.Next(0, badLayer.Neurons.Length); neuronIndex < badLayer.Neurons.Length; neuronIndex++)
+
+                    int partition = random.Next(0, badLayer.Neurons.Length);
+                    bool willGoUp = random.Next(0, 2) == 1;
+
+                    if (willGoUp)
                     {
-                        Neuron goodNeuron = goodLayer.Neurons[neuronIndex];
-                        Neuron badNeuron = badLayer.Neurons[neuronIndex];
-
-                        badNeuron.Bias = goodNeuron.Bias;
-
-                        for (int dendriteIndex = 0; dendriteIndex < badNeuron.Dendrites.Length; dendriteIndex++)
+                        for (int neuronIndex = partition; neuronIndex < badLayer.Neurons.Length; neuronIndex++)
                         {
-                            badNeuron.Dendrites[dendriteIndex].Weight = goodNeuron.Dendrites[dendriteIndex].Weight;
+                            Neuron goodNeuron = goodLayer.Neurons[neuronIndex];
+                            Neuron badNeuron = badLayer.Neurons[neuronIndex];
+
+                            badNeuron.Bias = goodNeuron.Bias;
+
+                            for (int dendriteIndex = 0; dendriteIndex < badNeuron.Dendrites.Length; dendriteIndex++)
+                            {
+                                badNeuron.Dendrites[dendriteIndex].Weight = goodNeuron.Dendrites[dendriteIndex].Weight;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int neuronIndex = partition; neuronIndex > 0; neuronIndex--)
+                        {
+                            Neuron goodNeuron = goodLayer.Neurons[neuronIndex];
+                            Neuron badNeuron = badLayer.Neurons[neuronIndex];
+
+                            badNeuron.Bias = goodNeuron.Bias;
+
+                            for (int dendriteIndex = 0; dendriteIndex < badNeuron.Dendrites.Length; dendriteIndex++)
+                            {
+                                badNeuron.Dendrites[dendriteIndex].Weight = goodNeuron.Dendrites[dendriteIndex].Weight;
+                            }
                         }
                     }
                 }
@@ -95,10 +111,16 @@ namespace Snake.NetworkElements
             int topCount = (int)(Habitats.Length * TopSurvivalThreshold);
             int bottomCount = (int)(Habitats.Length * BottomSurvivalThreshold);
 
+            for(int i = 0; i < topCount; i++)
+            {
+                //Habitats[i].Color = Color.White;
+            }
+
             Crossover(Random, topCount, bottomCount);
 
             for (int i = topCount; i < Habitats.Length - bottomCount; i++)
             {
+                //Habitats[i].Color = Color.Black;
                 Habitats[i].Python.IsDead = false;
                 Mutator.Mutate(Habitats[i].Python.Network, Random, MutationRate);
             }
@@ -106,6 +128,7 @@ namespace Snake.NetworkElements
             for (int i = Habitats.Length - bottomCount; i < Habitats.Length; i++)
             {
                 Habitats[i].Python.Network.Randomize(Random, min, max);
+                //Habitats[i].Color = Color.DarkRed;
             }
         }
     }

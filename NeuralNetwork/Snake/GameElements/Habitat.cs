@@ -11,7 +11,7 @@ namespace Snake.NetworkElements
     {
         public const double Wall = 0d;
         public const double Empty = 1d;
-        public const double Food = 0.5d;
+        public const double Food = 0.9d;
     }
 
     [DebuggerDisplay("Score: {Python.Score} IsDead: {IsSnakeDead}")]
@@ -29,6 +29,8 @@ namespace Snake.NetworkElements
 
         private Rectangle drawDestination;
         private Texture2D texture;
+
+        public Color Color;
 
         public Habitat(int boardSize, int cellSize, Point drawOffset, Texture2D boardTexture, Texture2D foodTexture, Texture2D snakeTexture, int movementsPerSecond)
         {
@@ -51,8 +53,9 @@ namespace Snake.NetworkElements
             texture = boardTexture;
             drawDestination = new Rectangle(drawOffset.X, drawOffset.Y, Size * CellSize, Size * CellSize);
 
-            Python = new Python(Board, CellSize, DrawOffset, snakeTexture, movementsPerSecond);
+            Python = new(Board, CellSize, DrawOffset, snakeTexture, movementsPerSecond);
             Food = new Food(foodTexture, Board, cellSize, DrawOffset, Python.Color);
+            Color = Color.Black;
         }
 
         public void Reset()
@@ -68,7 +71,7 @@ namespace Snake.NetworkElements
         {
             if (Python.IsDead) return;
 
-            spriteBatch.Draw(texture, drawDestination, Color.Black);
+            spriteBatch.Draw(texture, drawDestination, Color);
 
             Python.Draw(spriteBatch);
             Food.Draw(spriteBatch);

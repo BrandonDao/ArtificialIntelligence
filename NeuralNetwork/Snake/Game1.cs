@@ -3,8 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Snake.NetworkElements;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
-using System.Text.Json;
 
 namespace Snake
 {
@@ -15,34 +16,52 @@ namespace Snake
 
         private const int HabitatDisplayLength = 10;
         private const int HabitatCount = HabitatDisplayLength * HabitatDisplayLength;
-        private const int HabitatSize = 8;
+        private const int HabitatSize = 16;
         private const int BorderSize = 1;
-        private const int WindowSize = 800;
-        private const int CellSize = 950 / (HabitatDisplayLength * HabitatSize + HabitatDisplayLength * BorderSize) - 1;
+        private const int CellSize = 2;
+        private const int WindowSize = HabitatDisplayLength * HabitatSize * CellSize + HabitatDisplayLength * BorderSize;
 
-        private const int MovementsPerSecond = 10;
+        private const int MovementsPerSecond = 5;
+        private int updateSpeed = 1;
 
         private const double MutationRate = 0.5f;
-        private const double min = -1;
-        private const double max = 1;
+        private const double Min = -1;
+        private const double Max = 1;
+
+        private const bool WillLoadFromFile = true;
 
         private NaturalSelection naturalSelection;
         private Habitat[] Habitats;
 
         private KeyboardState previousKeyboardState;
 
+        private List<int> topNetworkAverageFitnesses;
+
+        private readonly TimeSpan speedChangeDelay = TimeSpan.FromMilliseconds(150);
+        private TimeSpan speedChangeTimer;
+
+        private Color backgroundColor;
+
         public Game1()
         {
-            graphics = new GraphicsDeviceManager(this);
+            graphics = new GraphicsDeviceManager(this)
+            {
+                PreferredBackBufferWidth = WindowSize,
+                PreferredBackBufferHeight = WindowSize
+            };
+
+            Window.Title = "Speed: " + updateSpeed.ToString();
+
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
 
         protected override void Initialize()
         {
-            graphics.PreferredBackBufferWidth = WindowSize;
-            graphics.PreferredBackBufferHeight = WindowSize;
-            graphics.ApplyChanges();
+            Habitats = new Habitat[HabitatCount];
+            topNetworkAverageFitnesses = new List<int>();
+
+            backgroundColor = new Color(10, 10, 10);
 
             base.Initialize();
         }
@@ -53,9 +72,6 @@ namespace Snake
 
             Texture2D blankTexture = new(GraphicsDevice, 1, 1);
             blankTexture.SetData(new Color[] { Color.White });
-
-            Habitats = new Habitat[HabitatCount];
-
 
             int x = 0;
             int y = 0;
@@ -75,17 +91,65 @@ namespace Snake
                 }
             }
 
-            naturalSelection = new NaturalSelection(Random.Shared, Habitats, MutationRate, min, max);
+            if (WillLoadFromFile)
+            {
+                string[] info = File.ReadAllLines(@"C:\Users\brand\Documents\Github\NeuralNetworks\NeuralNetwork\Snake\SavedNetworks.txt");
+
+                int infoIndex = 0;
+                foreach (var habitat in Habitats)
+                {
+                    for (int layerIndex = 1; layerIndex < habitat.Python.Network.Layers.Length; layerIndex++)
+                    {
+                        foreach (var neuron in habitat.Python.Network.Layers[layerIndex].Neurons)
+                        {
+                            neuron.Bias = double.Parse(info[infoIndex]);
+                            infoIndex++;
+
+                            foreach (var dendrite in neuron.Dendrites)
+                            {
+                                dendrite.Weight = double.Parse(info[infoIndex]);
+                                infoIndex++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            naturalSelection = new NaturalSelection(Random.Shared, Habitats, MutationRate, Min, Max, !WillLoadFromFile);
         }
 
         protected override void Update(GameTime gameTime)
         {
+            speedChangeTimer += gameTime.ElapsedGameTime;
             KeyboardState keyboardState = Keyboard.GetState();
 
             if (keyboardState.IsKeyDown(Keys.Escape)) Exit();
 
+            if(keyboardState.IsKeyDown(Keys.Enter))
+            {
+                updateSpeed = 1;
+                Window.Title = "Speed: 1";
+            }
+            else if (keyboardState.IsKeyDown(Keys.Up) && speedChangeTimer > speedChangeDelay)
+            {
+                updateSpeed += keyboardState.IsKeyDown(Keys.RightShift) ? 10 : 1;
+                Window.Title = "Speed: " + updateSpeed.ToString();
+                speedChangeTimer = TimeSpan.Zero;
+            }
+            else if (keyboardState.IsKeyDown(Keys.Down) && speedChangeTimer > speedChangeDelay)
+            {
+                updateSpeed -= keyboardState.IsKeyDown(Keys.RightShift) ? 10 : 1;
+                speedChangeTimer = TimeSpan.Zero;
 
-            for (int i = 0; i < (keyboardState.IsKeyDown(Keys.Space) ? 100 : 1); i++)
+                if (updateSpeed < 1)
+                {
+                    updateSpeed = 1;
+                }
+
+                Window.Title = "Speed: " + updateSpeed.ToString();
+            }
+
+            for (int i = 0; i < updateSpeed; i++)
             {
                 bool isAllDead = true;
 
@@ -99,13 +163,22 @@ namespace Snake
                     }
                 }
 
-                if (isAllDead || (keyboardState.IsKeyDown(Keys.Enter) && previousKeyboardState.IsKeyUp(Keys.Enter)))
+                if (isAllDead)
                 {
+                    naturalSelection.Select();
+
+                    int sum = 0;
+                    for (int topNetIndex = 0; topNetIndex < NaturalSelection.TopSurvivalThreshold; topNetIndex++)
+                    {
+                        sum += naturalSelection.Habitats[topNetIndex].Python.Score;
+                    }
+
+                    topNetworkAverageFitnesses.Add((int)(sum / (NaturalSelection.TopSurvivalThreshold * naturalSelection.Habitats.Length)));
+
                     foreach (var board in Habitats)
                     {
                         board.Reset();
                     }
-                    naturalSelection.Select();
                 }
             }
 
@@ -117,39 +190,35 @@ namespace Snake
         {
             StringBuilder builder = new();
 
-            /*
-             * habitat count
-             *      draw offset x
-             *      draw offset y
-             * 
-             * random
-             * mutator
-             * 
-             * activation func
-             * error func
-             * 
-             * layer count
-             *      input layer neuron count
-             *          bias
-             *          dendrite count
-             *              weight
-             *      hidden layer neuron count
-             *          ...
-             *      output layer neuron count
-             */
-
-            builder.Append(HabitatCount);
-            foreach(var habitat in naturalSelection.Habitats)
+            foreach (var habitat in Habitats)
             {
-                builder.Append(habitat.DrawOffset.X);
-                builder.Append(habitat.DrawOffset.Y);
+                for (int layerIndex = 1; layerIndex < habitat.Python.Network.Layers.Length; layerIndex++)
+                {
+                    foreach (var neuron in habitat.Python.Network.Layers[layerIndex].Neurons)
+                    {
+                        builder.AppendLine(neuron.Bias.ToString());
+
+                        foreach (var dendrite in neuron.Dendrites)
+                        {
+                            builder.AppendLine(dendrite.Weight.ToString());
+                        }
+                    }
+                }
             }
 
-            builder.Append();
+            File.WriteAllText(@"C:\Users\brand\Documents\Github\NeuralNetworks\NeuralNetwork\Snake\SavedNetworks.txt", builder.ToString());
 
+            builder.Clear();
 
-            builder.Append(JsonSerializer.Serialize(naturalSelection.Random));
-            builder.Append(JsonSerializer.Serialize(naturalSelection.Mutator));
+            foreach (var datapoint in topNetworkAverageFitnesses)
+            {
+                builder.AppendLine(datapoint.ToString());
+            }
+
+            string previousData = File.ReadAllText(@"C:\Users\brand\Documents\Github\NeuralNetworks\NeuralNetwork\Snake\AverageFitnesses.txt");
+            builder.Insert(0, previousData);
+
+            File.WriteAllText(@"C:\Users\brand\Documents\Github\NeuralNetworks\NeuralNetwork\Snake\AverageFitnesses.txt", builder.ToString());
 
 
             base.OnExiting(sender, args);
@@ -157,7 +226,8 @@ namespace Snake
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.DimGray);
+            GraphicsDevice.Clear(backgroundColor);
+            //GraphicsDevice.Clear(Color.Black);
             spriteBatch.Begin();
 
             foreach (var board in Habitats)
