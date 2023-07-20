@@ -79,5 +79,45 @@ namespace NeuralNetworkLibrary.NetworkStructure
             }
             return sum;
         }
+
+        public void Backprop(double learningRate, double[] desiredOutputs)
+        {
+            Layer outputLayer = Layers[^1];
+
+            for(int i = 0; i < outputLayer.Neurons.Length; i++)
+            {
+                outputLayer.Neurons[i].Delta = errorFunc.Derivative(outputLayer.Neurons[i].ActivatedOutput, desiredOutputs[i]);
+            }
+
+            for(int i = Layers.Length - 1; i > 0; i--)
+            {
+                Layers[i].Backprop(learningRate);
+            }
+        }
+
+        public void ApplyUpdates()
+        {
+            for(int i = 1; i < Layers.Length; i++)
+            {
+                Layers[i].ApplyUpdates();
+            }
+        }
+
+        public double TrainWithGradientDescent(double[][] inputs, double[][] desiredOutputs, double learningRate)
+        {
+            double summedError = 0;
+
+            for(int i = 0; i < inputs.Length; i++)
+            {
+                var outputs = Compute(inputs[i]);
+                summedError += GetError(outputs, desiredOutputs[i]);
+
+                Backprop(learningRate, desiredOutputs[i]);
+            }
+
+            ApplyUpdates();
+
+            return summedError / inputs.Length;
+        }
     }
 }

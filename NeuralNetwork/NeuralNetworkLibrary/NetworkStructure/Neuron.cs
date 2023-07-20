@@ -9,6 +9,9 @@
         public double Bias { get; set; }
         public Dendrite[] Dendrites { get; set; }
 
+        public double Delta { get; set; }
+        private double biasUpdate;
+
         public Neuron(ActivationFunction activationFunc, Neuron[] previousNeurons)
         {
             ActivationFunc = activationFunc;
@@ -42,6 +45,35 @@
             ActivatedOutput = ActivationFunc.Function(RawOutput);
 
             return ActivatedOutput;
+        }
+
+        public void Backprop(double learningRate)
+        {
+            double activationFuncDerivative = ActivationFunc.Derivative(RawOutput);
+
+            double a = learningRate * -(Delta * activationFuncDerivative);
+            biasUpdate += a;
+
+            foreach (var dendrite in Dendrites)
+            {
+                dendrite.Previous.Delta += Delta * activationFuncDerivative * dendrite.Weight;
+
+                dendrite.WeightUpdate += a * dendrite.Previous.ActivatedOutput;
+            }
+            Delta = 0;
+        }
+
+        public void ApplyUpdates()
+        {
+            Bias += biasUpdate;
+
+            foreach (var dendrite in Dendrites)
+            {
+                dendrite.Weight += dendrite.WeightUpdate;
+                dendrite.WeightUpdate = 0;
+            }
+            Delta = 0;
+            biasUpdate = 0;
         }
     }
 }

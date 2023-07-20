@@ -45,5 +45,23 @@
             }
             return Outputs;
         }
+
+        public void Backprop(double learningRate)
+        {
+            foreach(var neuron in Neurons)
+            {
+                neuron.Backprop(learningRate);
+            }
+        }
+
+        public void ApplyUpdates()
+        {
+            foreach (var neuron in Neurons)
+            {
+                neuron.ApplyUpdates();
+            }
+
+        }
+
     }
 }

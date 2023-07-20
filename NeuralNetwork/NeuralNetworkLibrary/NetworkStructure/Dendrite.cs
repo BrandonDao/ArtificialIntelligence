@@ -9,6 +9,8 @@ namespace NeuralNetworkLibrary.NetworkStructure
         public Neuron Next { get; }
         public double Weight { get; set; }
 
+        public double WeightUpdate { get; set; }
+
         public Dendrite(Neuron previous, Neuron next, double weight)
         {
             Previous = previous;
