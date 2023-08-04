@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameTheoryLibrary", "GameTheoryLibrary\GameTheoryLibrary.csproj", "{2A783BBF-BA2C-4AEB-BBA2-89A41CAD32D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicTacToe", "TicTacToe\TicTacToe.csproj", "{00E8E544-C8D9-4778-A5DB-AD15CF266783}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2A783BBF-BA2C-4AEB-BBA2-89A41CAD32D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A783BBF-BA2C-4AEB-BBA2-89A41CAD32D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A783BBF-BA2C-4AEB-BBA2-89A41CAD32D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A783BBF-BA2C-4AEB-BBA2-89A41CAD32D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00E8E544-C8D9-4778-A5DB-AD15CF266783}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E8E544-C8D9-4778-A5DB-AD15CF266783}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E8E544-C8D9-4778-A5DB-AD15CF266783}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E8E544-C8D9-4778-A5DB-AD15CF266783}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1B35401D-E7E2-49BC-AF05-1BA59EB8AA7B}
+	EndGlobalSection
+EndGlobal
