@@ -28,20 +28,24 @@
 
             T[] children = currentNode.GetChildren();
 
-            currentNode.Score = children[0].Score;
-
             foreach (var child in children)
             {
                 if (!child.IsTerminal)
                 {
                     GenerateTree(child, !isMin);
                 }
+            }
 
+            currentNode.Score = children[0].Score;
+
+            foreach(var child in children)
+            {
                 if (isMin ^ (child.Score > currentNode.Score))
                 {
                     currentNode.Score = child.Score;
                 }
             }
+
             Array.Sort(children, Comparer);
         }
     }

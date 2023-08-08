@@ -42,15 +42,6 @@ namespace TicTacToe
         {
             var testBoard = new Board()
             {
-                //TopLeft = CellType.X,
-                //TopMid = CellType.O,
-                //TopRight = CellType.X,
-                //MidLeft = CellType.O,
-                //Mid = CellType.O,
-                //MidRight = CellType.X,
-                ////LowLeft = CellType.O,
-                ////LowMid = CellType.O,
-                ////LowRight = CellType.X,
             };
 
             currentGameState = new(testBoard, isMin: true);
@@ -94,7 +85,7 @@ namespace TicTacToe
             
             if (isGameOver) return;
 
-            if (mouseState.LeftButton == ButtonState.Pressed && !(scaledPos.X < 0 || scaledPos.X > 3 || scaledPos.Y < 0 || scaledPos.Y > 3))
+            if (mouseState.LeftButton == ButtonState.Pressed && !(scaledPos.X < 0 || scaledPos.X > 2 || scaledPos.Y < 0 || scaledPos.Y > 2))
             {
                 var newBoard = new Board(currentGameState.Board);
                 newBoard.board[scaledPos.Y] |= (CellType)((int)CellType.X << (scaledPos.X << 1));
@@ -130,7 +121,7 @@ namespace TicTacToe
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.DarkBlue);
             spriteBatch.Begin();
 
             for (int r = 0; r < 3; r++)
