@@ -1,12 +1,15 @@
 ﻿using GameTheoryLibrary;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using static TicTacToe.Board;
 
 namespace TicTacToe
 {
+    [DebuggerDisplay("Score: {Score}, isMin: {isMin}")]
     public class TicTacToeGameState : IGameState<TicTacToeGameState>
     {
+
         public int Score { get; set; }
         public bool IsTerminal { get; private set; }
         public Board Board { get; private set; }
@@ -29,41 +32,50 @@ namespace TicTacToe
                 Score = 0;
                 return;
             }
-            
+
             IsTerminal = true;
 
             // row checks
             if (Board.board[0] == CellType.XWinAcross || Board.board[1] == CellType.XWinAcross || Board.board[2] == CellType.XWinAcross)
             {
-                Score = isMin ? 1 : -1;
+                Score = -1;
                 return;
             }
             if (Board.board[0] == CellType.OWinAcross || Board.board[1] == CellType.OWinAcross || Board.board[2] == CellType.OWinAcross)
             {
-                Score = isMin ? -1 : 1;
+                Score = 1;
                 return;
             }
 
             // column checks
             int count;
+            int otherCount;
             for (int c = 0; c < 3; c++)
             {
                 count = 0;
+                otherCount = 0;
                 CellType mask = (CellType)(0b11 << (c << 1));
 
                 for (int r = 0; r < 3; r++)
                 {
-                    count += (byte)(Board.board[r] & mask);
+                    if (((int)(Board.board[r] & mask) >> (c << 1)) == (int)CellType.X)
+                    {
+                        count++;
+                    }
+                    else if (((int)(Board.board[r] & mask) >> (c << 1)) == (int)CellType.O)
+                    {
+                        otherCount++;
+                    }
                 }
 
-                if (count == 0b0001_0101)
+                if (count == 3)
                 {
-                    Score = isMin ? 1 : -1;
+                    Score = -1;
                     return;
                 }
-                if (count == 0b0010_1010)
+                if (otherCount == 3)
                 {
-                    Score = isMin ? -1 : 1;
+                    Score = 1;
                     return;
                 }
             }
@@ -77,12 +89,12 @@ namespace TicTacToe
             }
             if (count == 0b0001_0101)
             {
-                Score = isMin ? 1 : -1;
+                Score = -1;
                 return;
             }
             if (count == 0b0010_1010)
             {
-                Score = isMin ? -1 : 1;
+                Score = 1;
                 return;
             }
 
@@ -95,12 +107,12 @@ namespace TicTacToe
             }
             if (count == 0b0001_0101)
             {
-                Score = isMin ? 1 : -1;
+                Score = -1;
                 return;
             }
             if (count == 0b0010_1010)
             {
-                Score = isMin ? -1 : 1;
+                Score = 1;
                 return;
             }
 
@@ -112,13 +124,13 @@ namespace TicTacToe
 
                 for (int r = 0; r < 3; r++)
                 {
-                    if((Board.board[r] & mask) != CellType.Empty)
+                    if ((Board.board[r] & mask) != CellType.Empty)
                     {
                         count++;
                     }
                 }
             }
-            if(count == 9)
+            if (count == 9)
             {
                 Score = 0;
                 return;
