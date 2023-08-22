@@ -19,8 +19,8 @@ namespace TicTacToe
 
             mid_O  = O << 2,
             mid_X  = X << 2,
-            left_O = O << 4,
-            left_X = X << 4,
+            Right_O = O << 4,
+            Right_X = X << 4,
         }
 
         public CellType[] board;

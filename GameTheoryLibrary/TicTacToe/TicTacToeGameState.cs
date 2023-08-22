@@ -11,10 +11,15 @@ namespace TicTacToe
     {
 
         public int Score { get; set; }
+        public int Alpha { get; set; }
+        public int Beta { get; set; }
         public bool IsTerminal { get; private set; }
         public Board Board { get; private set; }
+
+        public TicTacToeGameState[] PrivateChildren => children;
+
         private TicTacToeGameState[] children;
-        private bool isMin;
+        private readonly bool isMin;
 
         public TicTacToeGameState(Board board, bool isMin)
         {

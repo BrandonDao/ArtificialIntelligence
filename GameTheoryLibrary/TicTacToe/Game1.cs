@@ -48,6 +48,8 @@ namespace TicTacToe
             tree = new(currentGameState);
             tree.GenerateTree();
 
+            tree.FindProblem();
+
             base.Initialize();
         }
 
@@ -90,7 +92,7 @@ namespace TicTacToe
                 var newBoard = new Board(currentGameState.Board);
                 newBoard.board[scaledPos.Y] |= (CellType)((int)CellType.X << (scaledPos.X << 1));
 
-                var possibleMoves = currentGameState.GetChildren();
+                var possibleMoves = currentGameState.PrivateChildren;
                 foreach(var possibleMove in possibleMoves)
                 {
                     if(newBoard == possibleMove.Board)
@@ -104,7 +106,7 @@ namespace TicTacToe
                             return;
                         }
 
-                        currentGameState = currentGameState.GetChildren()[^1];
+                        currentGameState = currentGameState.PrivateChildren[^1];
                         if (currentGameState.IsTerminal)
                         {
                             isGameOver = true;
