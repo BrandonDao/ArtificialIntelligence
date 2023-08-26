@@ -49,6 +49,11 @@ namespace GameTheoryLibrary
 
                 if (beta < alpha)
                 {
+                    if(isMin && children.Length > i + 1)
+                    {
+                        ;
+                    }
+
                     if(children.Length >= 6 && !isMin)
                     {
                         ;
@@ -81,9 +86,18 @@ namespace GameTheoryLibrary
 
             if (children == null) return;
 
-            if (!isMin && !currentNode.PrivateChildren[^1].IsTerminal) FindProblem(children[^1], true);
 
-            for(int i = 0; i < children.Length; i++)
+
+            if (!isMin)
+            {
+                if (!children[^1].IsTerminal)
+                {
+                    FindProblem(children[^1], true);
+                }
+                return;
+            }
+
+            for (int i = 0; i < children.Length; i++)
             {
                 T child = children[i];
                 
@@ -92,10 +106,7 @@ namespace GameTheoryLibrary
 
                 if(child.PrivateChildren == null)
                 {
-                    if(isMin)
-                    {
-                        ;
-                    }
+                    ;
                 }
                 else
                 {
