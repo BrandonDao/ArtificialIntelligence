@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using static TicTacToe.Board;
 
 namespace TicTacToe
@@ -14,8 +15,10 @@ namespace TicTacToe
         private const int CellSize = 250;
         private const int BorderSize = 5;
 
-        private MiniMaxTree<TicTacToeGameState> tree;
+        //private MiniMaxTree<TicTacToeGameState> tree;
+        private TicTacToeGameState originalGameState;
         private TicTacToeGameState currentGameState;
+        private MonteCarloTree<TicTacToeGameState>.GameStateComparer gameStateComparer;
         private Texture2D blankTexture;
         private Texture2D XTexture;
         private Texture2D OTexture;
@@ -42,13 +45,24 @@ namespace TicTacToe
         {
             var testBoard = new Board()
             {
+                //LowRight = CellType.X,
+                
+                //Mid = CellType.O,
+                //MidLeft = CellType.O,
+
+                //TopLeft = CellType.X,
+
             };
 
-            currentGameState = new(testBoard, isMin: true);
-            tree = new(currentGameState);
-            tree.GenerateTree();
+            originalGameState = new(testBoard, isMin: true);
+            currentGameState = originalGameState;
 
-            tree.FindProblem();
+            gameStateComparer = new();
+
+            //tree = new(currentGameState);
+            //tree.GenerateTree();
+
+            //tree.FindProblem();
 
             base.Initialize();
         }
@@ -77,7 +91,7 @@ namespace TicTacToe
             if (keyboardState.IsKeyDown(Keys.Escape)) Exit();
             if (keyboardState.IsKeyDown(Keys.Space))
             {
-                currentGameState = tree.Head;
+                currentGameState = originalGameState;
                 hoverColor = gameNotOverColor;
                 isGameOver = false;
             }
@@ -90,33 +104,71 @@ namespace TicTacToe
             if (mouseState.LeftButton == ButtonState.Pressed && !(scaledPos.X < 0 || scaledPos.X > 2 || scaledPos.Y < 0 || scaledPos.Y > 2))
             {
                 var newBoard = new Board(currentGameState.Board);
-                newBoard.board[scaledPos.Y] |= (CellType)((int)CellType.X << (scaledPos.X << 1));
+                 newBoard.board[scaledPos.Y] |= (CellType)((int)CellType.X << (scaledPos.X << 1));
 
-                var possibleMoves = currentGameState.PrivateChildren;
-                foreach(var possibleMove in possibleMoves)
+                var possibleMoves = currentGameState.GetChildren();
+                for (int i = 0; i < possibleMoves.Length; i++)
                 {
-                    if(newBoard == possibleMove.Board)
+                    var possibleMove = possibleMoves[i];
+
+                    if (newBoard != possibleMove.Board) continue;
+
+                    var temp = currentGameState;
+                    currentGameState = possibleMove;
+                    currentGameState.Parent = temp;
+
+                    if (currentGameState.IsTerminal)
                     {
-                        currentGameState = possibleMove;
-
-                        if(currentGameState.IsTerminal)
-                        {
-                            isGameOver = true;
-                            hoverColor = gameOverColor;
-                            return;
-                        }
-
-                        currentGameState = currentGameState.PrivateChildren[^1];
-                        if (currentGameState.IsTerminal)
-                        {
-                            isGameOver = true;
-                            hoverColor = gameOverColor;
-                            return;
-                        }
-                        break;
+                        isGameOver = true;
+                        hoverColor = gameOverColor;
+                        return;
                     }
+
+                    var bestAIMove = MonteCarloTree<TicTacToeGameState>.Search(currentGameState, iterations: 10_000, Random.Shared, gameStateComparer);
+                    temp = currentGameState;
+                    currentGameState = bestAIMove;
+                    currentGameState.Parent = temp;
+
+                    if (currentGameState.IsTerminal)
+                    {
+                        isGameOver = true;
+                        hoverColor = gameOverColor;
+                        return;
+                    }
+                    break;
                 }
             }
+
+            //if (mouseState.LeftButton == ButtonState.Pressed && !(scaledPos.X < 0 || scaledPos.X > 2 || scaledPos.Y < 0 || scaledPos.Y > 2))
+            //{
+            //    var newBoard = new Board(currentGameState.Board);
+            //    newBoard.board[scaledPos.Y] |= (CellType)((int)CellType.X << (scaledPos.X << 1));
+
+            //    var possibleMoves = currentGameState.BackingChildren;
+            //    foreach(var possibleMove in possibleMoves)
+            //    {
+            //        if(newBoard == possibleMove.Board)
+            //        {
+            //            currentGameState = possibleMove;
+
+            //            if(currentGameState.IsTerminal)
+            //            {
+            //                isGameOver = true;
+            //                hoverColor = gameOverColor;
+            //                return;
+            //            }
+
+            //            currentGameState = currentGameState.BackingChildren[^1];
+            //            if (currentGameState.IsTerminal)
+            //            {
+            //                isGameOver = true;
+            //                hoverColor = gameOverColor;
+            //                return;
+            //            }
+            //            break;
+            //        }
+            //    }
+            //}
 
             base.Update(gameTime);
         }

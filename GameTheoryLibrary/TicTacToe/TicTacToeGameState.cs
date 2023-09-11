@@ -10,21 +10,27 @@ namespace TicTacToe
     public class TicTacToeGameState : IGameState<TicTacToeGameState>
     {
 
-        public int Score { get; set; }
+        public double Score { get; set; }
         public int Alpha { get; set; }
         public int Beta { get; set; }
+        public bool IsMin { get; }
         public bool IsTerminal { get; private set; }
+        public bool IsExpanded { get; set; }
+        public TicTacToeGameState Parent { get; set; }
         public Board Board { get; private set; }
 
-        public TicTacToeGameState[] PrivateChildren => children;
+        public TicTacToeGameState[] BackingChildren => children;
+
+        public int SimulationCount { get; set; }
 
         private TicTacToeGameState[] children;
-        private readonly bool isMin;
 
         public TicTacToeGameState(Board board, bool isMin)
         {
             Board = board;
-            this.isMin = isMin;
+            IsMin = isMin;
+            IsExpanded = false;
+            SimulationCount = 0;
             EvaluateBoard();
         }
 
@@ -150,9 +156,11 @@ namespace TicTacToe
         {
             if (IsTerminal) throw new InvalidOperationException("why???");
             if (children != null) return children;
+            
+            IsExpanded = true;
 
             List<TicTacToeGameState> newChildren = new(9);
-            CellType move = isMin ? CellType.X : CellType.O;
+            CellType move = IsMin ? CellType.X : CellType.O;
 
             for (int r = 0; r < 3; r++)
             {
@@ -164,7 +172,7 @@ namespace TicTacToe
                     {
                         Board temp = new(Board);
                         temp.board[r] = (temp.board[r] & ~mask) | (CellType)((int)move << (c << 1));
-                        newChildren.Add(new TicTacToeGameState(temp, !isMin));
+                        newChildren.Add(new TicTacToeGameState(temp, !IsMin) { Parent = this });
                     }
                 }
             }
@@ -172,5 +180,9 @@ namespace TicTacToe
             children = newChildren.ToArray();
             return children;
         }
+
+        private static double ln(double d) => Math.Log(d);
+        public double CalculateUCT(TicTacToeGameState parent)
+            => (Score / SimulationCount) + IGameState<TicTacToeGameState>.C * Math.Sqrt(ln(parent.SimulationCount) / SimulationCount);
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Xml.Serialization;
-
-namespace GameTheoryLibrary
+﻿namespace GameTheoryLibrary
 {
     public class MiniMaxTree<T> where T : IGameState<T>
     {
@@ -8,11 +6,6 @@ namespace GameTheoryLibrary
         {
             public int Compare(T? x, T? y) => x!.Score.CompareTo(y!.Score);
         }
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public static T Monke { get; set; }
-        public static Stack<T> MonkeFamily = new();
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public T Head { get; private set; }
         public GameStateComparer Comparer { get; private set; }
 
@@ -31,30 +24,30 @@ namespace GameTheoryLibrary
 
             T[] children = currentNode.GetChildren();
 
-            for(int i = 0; i < children.Length; i++)
+            for (int i = 0; i < children.Length; i++)
             {
                 if (!children[i].IsTerminal)
                 {
                     GenerateTree(children[i], !isMin, alpha, beta);
                 }
 
-                if(isMin && children[i].Score < beta)
+                if (isMin && children[i].Score < beta)
                 {
-                    beta = children[i].Score;
+                    beta = (int)children[i].Score;
                 }
-                else if(!isMin && children[i].Score > alpha)
+                else if (!isMin && children[i].Score > alpha)
                 {
-                    alpha = children[i].Score;
+                    alpha = (int)children[i].Score;
                 }
 
                 if (beta < alpha)
                 {
-                    if(isMin && children.Length > i + 1)
+                    if (isMin && children.Length > i + 1)
                     {
                         ;
                     }
 
-                    if(children.Length >= 6 && !isMin)
+                    if (children.Length >= 6 && !isMin)
                     {
                         ;
                     }
@@ -64,7 +57,7 @@ namespace GameTheoryLibrary
 
             currentNode.Score = children[0].Score;
 
-            foreach(var child in children)
+            foreach (var child in children)
             {
                 if (isMin ^ (child.Score > currentNode.Score))
                 {
@@ -79,14 +72,12 @@ namespace GameTheoryLibrary
         {
             FindProblem(Head, true);
         }
-        
+
         private void FindProblem(T currentNode, bool isMin)
         {
-            T[] children = currentNode.PrivateChildren;
+            T[]? children = currentNode.BackingChildren;
 
             if (children == null) return;
-
-
 
             if (!isMin)
             {
@@ -100,11 +91,11 @@ namespace GameTheoryLibrary
             for (int i = 0; i < children.Length; i++)
             {
                 T child = children[i];
-                
+
                 if (child.IsTerminal) continue;
 
 
-                if(child.PrivateChildren == null)
+                if (child.BackingChildren == null)
                 {
                     ;
                 }
