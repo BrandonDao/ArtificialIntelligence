@@ -1,40 +1,76 @@
-﻿namespace GameTheoryLibrary
+﻿using System.Diagnostics;
+
+namespace GameTheoryLibrary
 {
     public static class MonteCarloTree<T> where T : IGameState<T>
     {
-        public class GameStateComparer : IComparer<T>
+        [DebuggerDisplay("Score: {Score}, SimulationCount: {SimulationCount}")]
+        public class Node
         {
-            public int Compare(T? x, T? y) => (x!.Score / x!.SimulationCount).CompareTo(y!.Score / y!.SimulationCount);
+            const double C = 1.5;
+            public T State { get; private set; }
+            public int SimulationCount { get; set; }
+            public double Score { get; set; }
+            public bool IsExpanded { get; private set; }
+            public Node? Parent { get; private set; }
+            private Node[]? children;
+
+            public Node(T state) => State = state;
+
+            public Node[] GetChildren()
+            {
+                if (children != null) return children;
+
+                IsExpanded = true;
+                
+                T[] stateChildren = State.GetChildren();
+                children = new Node[stateChildren.Length];
+                for(int i = 0; i < children.Length; i++)
+                {
+                    children[i] = new Node(stateChildren[i]) { Parent = this };
+                }
+                return children;
+            }
+
+            public double CalculateUCT()
+                => SimulationCount == 0 ? double.PositiveInfinity : (Score / SimulationCount) + C * Math.Sqrt(Math.Log(Parent!.SimulationCount, Math.E) / SimulationCount);
+        }
+
+        public class GameStateComparer : IComparer<Node>
+        {
+            public int Compare(Node? x, Node? y) => (x!.Score / x!.SimulationCount).CompareTo(y!.Score / y!.SimulationCount);
         }
 
         public static T Search(T currentState, int iterations, Random random, GameStateComparer comparer)
         {
+            Node root = new(currentState);
+
             for (int i = 0; i < iterations; i++)
             {
-                T selectedState = MonteCarloTree<T>.Select(currentState);
-                T expandedState = Expand(selectedState, random);
-                double value = Simulate(expandedState, random);
+                Node selectedState = Select(root);
+                Node expandedState = Expand(selectedState, random);
+                double value = Simulate(expandedState,  random);
                 Backpropagate(value, expandedState);
             }
 
-            T[] children = currentState.GetChildren();
-            Array.Sort (children, comparer);
+            Node[] children = root.GetChildren();
+            Array.Sort(children, comparer: comparer);
 
-            return children[^1];
+            return children[^1].State;
         }
 
-        private static T Select(T currentState)
+        private static Node Select(Node currentState)
         {
-            T currentStateCopy = currentState;
+            var currentStateCopy = currentState;
 
             while (currentStateCopy.IsExpanded)
             {
-                T selectedChild = currentStateCopy;
+                var selectedChild = currentStateCopy;
                 double maxUCT = double.NegativeInfinity;
 
                 foreach (var child in currentStateCopy.GetChildren())
                 {
-                    double UCT = child.CalculateUCT(currentStateCopy);
+                    double UCT = child.CalculateUCT();
                     if (UCT > maxUCT)
                     {
                         maxUCT = UCT;
@@ -49,36 +85,34 @@
             return currentStateCopy;
         }
 
-        private static T Expand(T currentState, Random random)
+        private static Node Expand(Node currentNode, Random random)
         {
-            if (currentState.IsTerminal) return currentState;
+            if (currentNode.State.IsTerminal) return currentNode;
 
-            T[] children = currentState.GetChildren();
-            T child = children[random.Next(0, children.Length)];
-
-            return child;
+            Node[] children = currentNode.GetChildren();
+            return children[0]; //random.Next(0, children.Length)];
         }
 
-        private static double Simulate(T currentState, Random random)
+        private static double Simulate(Node currentNode, Random random)
         {
-            while (!currentState.IsTerminal)
+            while (!currentNode.State.IsTerminal)
             {
-                T[] children = currentState.GetChildren();
-                currentState = children[random.Next(0, children.Length)];
+                Node[] children = currentNode.GetChildren();
+                currentNode = children[random.Next(0, children.Length)];
             }
 
-            return currentState.Score;
+            return currentNode.State.Score;
         }
 
-        private static void Backpropagate(double value, T currentState)
+        private static void Backpropagate(double value, Node currentNode)
         {
-            T currentStateCopy = currentState;
+            Node? currentNodeCopy = currentNode;
 
-            while (currentStateCopy != null)
+            while (currentNodeCopy != null)
             {
-                currentStateCopy.SimulationCount++;
-                currentStateCopy.Score += value;
-                currentStateCopy = currentStateCopy.Parent;
+                currentNodeCopy.SimulationCount++;
+                currentNodeCopy.Score += value;
+                currentNodeCopy = currentNodeCopy.Parent;
 
                 value = -value;
             }

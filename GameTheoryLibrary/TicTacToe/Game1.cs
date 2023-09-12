@@ -104,7 +104,7 @@ namespace TicTacToe
             if (mouseState.LeftButton == ButtonState.Pressed && !(scaledPos.X < 0 || scaledPos.X > 2 || scaledPos.Y < 0 || scaledPos.Y > 2))
             {
                 var newBoard = new Board(currentGameState.Board);
-                 newBoard.board[scaledPos.Y] |= (CellType)((int)CellType.X << (scaledPos.X << 1));
+                newBoard.board[scaledPos.Y] |= (CellType)((int)CellType.X << (scaledPos.X << 1));
 
                 var possibleMoves = currentGameState.GetChildren();
                 for (int i = 0; i < possibleMoves.Length; i++)
@@ -113,9 +113,7 @@ namespace TicTacToe
 
                     if (newBoard != possibleMove.Board) continue;
 
-                    var temp = currentGameState;
                     currentGameState = possibleMove;
-                    currentGameState.Parent = temp;
 
                     if (currentGameState.IsTerminal)
                     {
@@ -125,9 +123,7 @@ namespace TicTacToe
                     }
 
                     var bestAIMove = MonteCarloTree<TicTacToeGameState>.Search(currentGameState, iterations: 10_000, Random.Shared, gameStateComparer);
-                    temp = currentGameState;
                     currentGameState = bestAIMove;
-                    currentGameState.Parent = temp;
 
                     if (currentGameState.IsTerminal)
                     {

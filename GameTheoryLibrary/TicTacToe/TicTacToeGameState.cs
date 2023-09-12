@@ -1,22 +1,17 @@
 ﻿using GameTheoryLibrary;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using static TicTacToe.Board;
 
 namespace TicTacToe
 {
-    [DebuggerDisplay("Score: {Score}, isMin: {isMin}")]
     public class TicTacToeGameState : IGameState<TicTacToeGameState>
     {
-
         public double Score { get; set; }
         public int Alpha { get; set; }
         public int Beta { get; set; }
         public bool IsMin { get; }
         public bool IsTerminal { get; private set; }
-        public bool IsExpanded { get; set; }
-        public TicTacToeGameState Parent { get; set; }
         public Board Board { get; private set; }
 
         public TicTacToeGameState[] BackingChildren => children;
@@ -29,7 +24,6 @@ namespace TicTacToe
         {
             Board = board;
             IsMin = isMin;
-            IsExpanded = false;
             SimulationCount = 0;
             EvaluateBoard();
         }
@@ -156,8 +150,6 @@ namespace TicTacToe
         {
             if (IsTerminal) throw new InvalidOperationException("why???");
             if (children != null) return children;
-            
-            IsExpanded = true;
 
             List<TicTacToeGameState> newChildren = new(9);
             CellType move = IsMin ? CellType.X : CellType.O;
@@ -172,7 +164,7 @@ namespace TicTacToe
                     {
                         Board temp = new(Board);
                         temp.board[r] = (temp.board[r] & ~mask) | (CellType)((int)move << (c << 1));
-                        newChildren.Add(new TicTacToeGameState(temp, !IsMin) { Parent = this });
+                        newChildren.Add(new TicTacToeGameState(temp, !IsMin));
                     }
                 }
             }
@@ -180,9 +172,5 @@ namespace TicTacToe
             children = newChildren.ToArray();
             return children;
         }
-
-        private static double ln(double d) => Math.Log(d);
-        public double CalculateUCT(TicTacToeGameState parent)
-            => (Score / SimulationCount) + IGameState<TicTacToeGameState>.C * Math.Sqrt(ln(parent.SimulationCount) / SimulationCount);
     }
 }
