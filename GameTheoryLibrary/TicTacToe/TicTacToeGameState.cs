@@ -1,10 +1,12 @@
 ﻿using GameTheoryLibrary;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using static TicTacToe.Board;
 
 namespace TicTacToe
 {
+    [DebuggerDisplay("{Score == 1 ? \"Win\" : (Score == 0 ? \"Tie\" : \"Loss\")} for {IsMin ? \"Player\" : \"AI\"}")]
     public class TicTacToeGameState : IGameState<TicTacToeGameState>
     {
         public double Score { get; set; }
@@ -43,12 +45,12 @@ namespace TicTacToe
             // row checks
             if (Board.board[0] == CellType.XWinAcross || Board.board[1] == CellType.XWinAcross || Board.board[2] == CellType.XWinAcross)
             {
-                Score = -1;
+                Score = 1;
                 return;
             }
             if (Board.board[0] == CellType.OWinAcross || Board.board[1] == CellType.OWinAcross || Board.board[2] == CellType.OWinAcross)
             {
-                Score = 1;
+                Score = -1;
                 return;
             }
 
@@ -75,12 +77,12 @@ namespace TicTacToe
 
                 if (count == 3)
                 {
-                    Score = -1;
+                    Score = 1;
                     return;
                 }
                 if (otherCount == 3)
                 {
-                    Score = 1;
+                    Score = -1;
                     return;
                 }
             }
@@ -94,12 +96,12 @@ namespace TicTacToe
             }
             if (count == 0b0001_0101)
             {
-                Score = -1;
+                Score = 1;
                 return;
             }
             if (count == 0b0010_1010)
             {
-                Score = 1;
+                Score = -1;
                 return;
             }
 
@@ -112,12 +114,12 @@ namespace TicTacToe
             }
             if (count == 0b0001_0101)
             {
-                Score = -1;
+                Score = 1;
                 return;
             }
             if (count == 0b0010_1010)
             {
-                Score = 1;
+                Score = -1;
                 return;
             }
 

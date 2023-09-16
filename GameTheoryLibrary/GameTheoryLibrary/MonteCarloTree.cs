@@ -22,10 +22,10 @@ namespace GameTheoryLibrary
                 if (children != null) return children;
 
                 IsExpanded = true;
-                
+
                 T[] stateChildren = State.GetChildren();
                 children = new Node[stateChildren.Length];
-                for(int i = 0; i < children.Length; i++)
+                for (int i = 0; i < children.Length; i++)
                 {
                     children[i] = new Node(stateChildren[i]) { Parent = this };
                 }
@@ -49,7 +49,7 @@ namespace GameTheoryLibrary
             {
                 Node selectedState = Select(root);
                 Node expandedState = Expand(selectedState, random);
-                double value = Simulate(expandedState,  random);
+                double value = Simulate(expandedState, random);
                 Backpropagate(value, expandedState);
             }
 
@@ -90,7 +90,7 @@ namespace GameTheoryLibrary
             if (currentNode.State.IsTerminal) return currentNode;
 
             Node[] children = currentNode.GetChildren();
-            return children[0]; //random.Next(0, children.Length)];
+            return children[random.Next(0, children.Length)];
         }
 
         private static double Simulate(Node currentNode, Random random)
@@ -101,7 +101,7 @@ namespace GameTheoryLibrary
                 currentNode = children[random.Next(0, children.Length)];
             }
 
-            return currentNode.State.Score;
+            return (currentNode.State.IsMin ? -currentNode.State.Score : currentNode.State.Score);
         }
 
         private static void Backpropagate(double value, Node currentNode)

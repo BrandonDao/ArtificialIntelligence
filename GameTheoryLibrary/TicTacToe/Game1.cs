@@ -45,12 +45,13 @@ namespace TicTacToe
         {
             var testBoard = new Board()
             {
-                //LowRight = CellType.X,
-                
-                //Mid = CellType.O,
+                //LowLeft = CellType.X,
+                //LowMid = CellType.X,
                 //MidLeft = CellType.O,
+                //MidRight = CellType.X,
 
-                //TopLeft = CellType.X,
+                //TopRight = CellType.O,
+                //TopLeft = CellType.O,
 
             };
 
@@ -122,7 +123,7 @@ namespace TicTacToe
                         return;
                     }
 
-                    var bestAIMove = MonteCarloTree<TicTacToeGameState>.Search(currentGameState, iterations: 10_000, Random.Shared, gameStateComparer);
+                    var bestAIMove = MonteCarloTree<TicTacToeGameState>.Search(currentGameState, iterations: 50_000, Random.Shared, gameStateComparer);
                     currentGameState = bestAIMove;
 
                     if (currentGameState.IsTerminal)
