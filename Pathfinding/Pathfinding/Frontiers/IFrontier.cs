@@ -3,7 +3,7 @@
     public interface IFrontier<T>
     {
         public int Count { get; }
-        public void Enqueue(AgentData<T> vertex, float priority);
-        public AgentData<T> Dequeue();
+        public void Enqueue(Agent.Data<T> vertex, float priority);
+        public Agent.Data<T> Dequeue();
     }
 }

@@ -5,47 +5,9 @@ using System.Drawing;
 
 namespace Pathfinding
 {
+
     public partial class Program
     {
-        public static AgentData<T> FindPath<T, TFrontier, TEnvironment>(
-                T start,
-                Func<AgentData<T>, HashSet<T>, Edge<T>, float> getPriority)
-            where T : IState
-            where TFrontier : IFrontier<T>, new()
-            where TEnvironment : IEnvironment<T>, new()
-        {
-            IEnvironment<T> environment = new TEnvironment();
-            IFrontier<T> frontier = new TFrontier();
-            frontier.Enqueue(new(start, founder: null, priority: 0, distance: 0), priority: 0);
-
-            HashSet<T> visited = [];
-
-            while (frontier.Count > 0)
-            {
-                AgentData<T> currState = frontier.Dequeue();
-                visited.Add(currState.Value);
-
-                List<Edge<T>> children = environment.GetSuccessors(currState.Value);
-
-                foreach (Edge<T> edge in children)
-                {
-                    float newPriority = getPriority.Invoke(currState, visited, edge);
-
-                    AgentData<T> nextState = new(
-                        value: edge.End,
-                        founder: currState,
-                        priority: newPriority,
-                        distance: currState.DistanceFromStart + edge.Weight);
-
-                    if (nextState.Value.Equals(environment.GoalState)) return nextState;
-
-                    frontier.Enqueue(nextState, newPriority);
-                }
-            }
-
-            throw new ArgumentException("Invalid search parameters!");
-        }
-
         private static void Main()
         {
             EightPuzzleState start = new(new int[,]
@@ -64,9 +26,9 @@ namespace Pathfinding
             },
             new Point(2, 2));
 
-            var solvedState = FindPath<EightPuzzleState, PriorityQueueFrontier<EightPuzzleState>, EightPuzzle>(
+            var solvedState = Agent.FindPath<EightPuzzleState, PriorityQueueFrontier<EightPuzzleState>, EightPuzzle>(
                 start: start,
-                getPriority: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
+                getPriority: (Agent.Data<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
                     => curr.DistanceFromStart + edge.Weight + EightPuzzle.DistanceFromSolved(edge.End));
 
             for (var a = solvedState; a != null; a = a.Predecessor)
