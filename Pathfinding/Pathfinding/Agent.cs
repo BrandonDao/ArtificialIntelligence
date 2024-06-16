@@ -16,14 +16,13 @@ namespace Pathfinding
             public float DistanceFromStart { get; set; } = distance;
         }
 
-        public static Data<TState> FindPath<TState, TFrontier, TEnvironment>(
+        public static Data<TState> FindPath<TState, TFrontier>(
                 TState start,
+                IEnvironment<TState> environment,
                 Func<Data<TState>, HashSet<TState>, Edge<TState>, float> getPriority)
             where TState : IState
             where TFrontier : IFrontier<TState>, new()
-            where TEnvironment : IEnvironment<TState>, new()
         {
-            IEnvironment<TState> environment = new TEnvironment();
             IFrontier<TState> frontier = new TFrontier();
             frontier.Enqueue(new(start, founder: null, priority: 0, distance: 0), priority: 0);
 
