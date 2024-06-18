@@ -1,4 +1,5 @@
-﻿using Pathfinding.Environments;
+﻿using Pathfinding.Agents;
+using Pathfinding.Environments;
 using Pathfinding.Frontiers;
 using Pathfinding.States;
 using System.Drawing;
@@ -26,19 +27,19 @@ namespace Pathfinding
             },
             new Point(2, 2));
 
+            var environment = new EightPuzzleEnvironment();
+
             Agent<EightPuzzleState> eightPuzzleAgent = new(
                 startingState: start,
                 frontier: new PriorityQueueFrontier<EightPuzzleState>(),
-                environment: new EightPuzzleEnvironment(),
-                getPriority: (Agent<EightPuzzleState>.AgentData curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
+                environment: environment,
+                getPriority: (Agent<EightPuzzleState>.Data curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
                 => curr.DistanceFromStart + edge.Weight + EightPuzzleEnvironment.DistanceFromSolved(edge.End));
 
-            Agent<EightPuzzleState>.AgentData? b;
+            while (!eightPuzzleAgent.MakeMove((state) => state == environment.GoalState)) ;
+                
 
-            while (!eightPuzzleAgent.MakeMove(out b)) ;
-
-
-            for (var a = b; a != null; a = a.Predecessor)
+            for (var a = eightPuzzleAgent.GetFinishedState(); a != null; a = a.Predecessor)
             {
                 Console.WriteLine($"{a.State.Board[0, 0]}|{a.State.Board[0, 1]}|{a.State.Board[0, 2]}\n"
                                 + $"{a.State.Board[1, 0]}|{a.State.Board[1, 1]}|{a.State.Board[1, 2]}\n"

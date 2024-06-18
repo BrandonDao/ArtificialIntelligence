@@ -1,4 +1,5 @@
-﻿using Pathfinding.States;
+﻿using Pathfinding.Agents;
+using Pathfinding.States;
 
 namespace Pathfinding.Frontiers
 {
@@ -6,7 +7,7 @@ namespace Pathfinding.Frontiers
         where TState : IState
     {
         public int Count { get; }
-        public void Enqueue(Agent<TState>.AgentData data, float priority);
-        public Agent<TState>.AgentData Dequeue();
+        public void Enqueue(Agent<TState>.Data data, float priority);
+        public Agent<TState>.Data Dequeue();
     }
 }

@@ -1,12 +1,15 @@
-﻿using System.Diagnostics;
+﻿using Pathfinding.States;
+using System.Diagnostics;
 
 namespace Pathfinding
 {
     [DebuggerDisplay("{Start.Value} -> {End.Value}")]
-    public class Edge<T>(T start, T end, float weight)
+    public class Edge<TState>(TState start, TState end, float weight)
+        where TState : IState
     {
-        public T Start { get; set; } = start;
-        public T End { get; set; } = end;
+        public TState Start { get;} = start;
+        public TState End { get; } = end;
+        public StateToken<IState> EndStateToken { get; } = new(end);
         public float Weight { get; set; } = weight;
     }
 }

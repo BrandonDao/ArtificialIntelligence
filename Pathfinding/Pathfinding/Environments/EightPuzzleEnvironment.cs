@@ -1,8 +1,10 @@
-﻿using Pathfinding.States;
+﻿using Pathfinding.Agents;
+using Pathfinding.States;
 using System.Drawing;
 
 namespace Pathfinding.Environments
 {
+
     public class EightPuzzleEnvironment() : IEnvironment<EightPuzzleState>
     {
         private static EightPuzzleState goalState = new(board: new int[,]
@@ -27,13 +29,17 @@ namespace Pathfinding.Environments
         };
         private static readonly List<Point> moves = [new(1, 0), new(-1, 0), new(0, 1), new(0, -1)];
 
-        private readonly List<Agent<EightPuzzleState>> agents = [];
+        private readonly Dictionary<StateToken<IState>, EightPuzzleState> stateMap = [];
 
-        public List<Edge<EightPuzzleState>> GetSuccessors(IState state)
+        public void RegisterAgent(StateToken<IState> currentStateToken, EightPuzzleState state)
+            => stateMap.Add(currentStateToken, state);
+
+        public List<Edge<EightPuzzleState>> GetSuccessors(StateToken<IState> stateToken)
         {
-            List<Edge<EightPuzzleState>> newStates = [];
+            List<Edge<EightPuzzleState>> newStateEdges = [];
 
-            var castedState = (EightPuzzleState)state;
+            var castedState = stateMap[stateToken];
+            stateMap.Remove(stateToken);
 
             foreach (var move in moves)
             {
@@ -53,17 +59,18 @@ namespace Pathfinding.Environments
                     newBoard[castedState.EmptyTile.X, castedState.EmptyTile.Y] = castedState.Board[newEmptySpace.X, newEmptySpace.Y];
                     newBoard[newEmptySpace.X, newEmptySpace.Y] = 0;
 
-                    newStates.Add(
-                        new Edge<EightPuzzleState>(
-                            start: castedState,
-                            end: new EightPuzzleState(newBoard, newEmptySpace),
-                            weight: 1));
+                    newStateEdges.Add(new Edge<EightPuzzleState>(
+                        start: castedState,
+                        end: new EightPuzzleState(newBoard, newEmptySpace),
+                        weight: 1));
+
+                    stateMap.Add(newStateEdges[^1].EndStateToken, newStateEdges[^1].End);
                 }
             }
-            return newStates;
+            return newStateEdges;
         }
 
-        public Agent<EightPuzzleState>.AgentData MakeMove(Agent<EightPuzzleState>.AgentData newStateData) => newStateData;
+        public Agent<EightPuzzleState>.Data MakeMove(Agent<EightPuzzleState>.Data newStateData) => newStateData;
 
         public static float DistanceFromSolved(EightPuzzleState state)
         {
