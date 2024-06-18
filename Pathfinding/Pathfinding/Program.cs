@@ -26,13 +26,14 @@ namespace Pathfinding
             },
             new Point(2, 2));
 
-            Agent<EightPuzzleState, PriorityQueueFrontier<EightPuzzleState>> eightPuzzleAgent = new(
-                start,
-                new EightPuzzleEnvironment(),
-                getPriority: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
+            Agent<EightPuzzleState> eightPuzzleAgent = new(
+                startingState: start,
+                frontier: new PriorityQueueFrontier<EightPuzzleState>(),
+                environment: new EightPuzzleEnvironment(),
+                getPriority: (Agent<EightPuzzleState>.AgentData curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
                 => curr.DistanceFromStart + edge.Weight + EightPuzzleEnvironment.DistanceFromSolved(edge.End));
 
-            AgentData<EightPuzzleState>? b;
+            Agent<EightPuzzleState>.AgentData? b;
 
             while (!eightPuzzleAgent.MakeMove(out b)) ;
 
@@ -43,19 +44,6 @@ namespace Pathfinding
                                 + $"{a.State.Board[1, 0]}|{a.State.Board[1, 1]}|{a.State.Board[1, 2]}\n"
                                 + $"{a.State.Board[2, 0]}|{a.State.Board[2, 1]}|{a.State.Board[2, 2]}\n");
             }
-
-
-            //var dfs = Pathfind(start, end, (SearchState<Point> curr, HashSet<Vertex<Point>> visited, Edge<Point> edge)
-            //    => visited.Contains(edge.End) ? float.PositiveInfinity : curr.Priority - 1);
-
-            //var bfs = Pathfind(start, end, (SearchState<Point> curr, HashSet<Vertex<Point>> visited, Edge<Point> edge)
-            //    => visited.Contains(edge.End) ? float.PositiveInfinity: curr.Priority + 1);
-
-            //var ucs = Pathfind(start, end, (SearchState<Point> curr, HashSet<Vertex<Point>> visited, Edge<Point> edge)
-            //    => curr.DistanceFromStart + edge.Weight);
-
-            //var aStar = Pathfind(start, end, (SearchState<Point> curr, HashSet<Vertex<Point>> visited, Edge<Point> edge)
-            //    => curr.DistanceFromStart + edge.Weight + octileHeuristic(edge));
         }
     }
 }

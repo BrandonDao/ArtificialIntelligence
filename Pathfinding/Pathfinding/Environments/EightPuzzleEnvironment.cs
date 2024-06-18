@@ -3,15 +3,14 @@ using System.Drawing;
 
 namespace Pathfinding.Environments
 {
-    public class EightPuzzleEnvironment : IEnvironment<EightPuzzleState>
+    public class EightPuzzleEnvironment() : IEnvironment<EightPuzzleState>
     {
         private static EightPuzzleState goalState = new(board: new int[,]
             {
                 { 1,2,3 },
                 { 4,5,6 },
                 { 7,8,0 }
-            },
-            emptyTile: new Point(2, 2));
+            }, emptyTile: new Point(2, 2));
         public EightPuzzleState GoalState => goalState;
 
         private static readonly Dictionary<int, Point> TileToPosition = new()
@@ -27,6 +26,8 @@ namespace Pathfinding.Environments
             [0] = new Point(2, 2),
         };
         private static readonly List<Point> moves = [new(1, 0), new(-1, 0), new(0, 1), new(0, -1)];
+
+        private readonly List<Agent<EightPuzzleState>> agents = [];
 
         public List<Edge<EightPuzzleState>> GetSuccessors(IState state)
         {
@@ -62,7 +63,7 @@ namespace Pathfinding.Environments
             return newStates;
         }
 
-        public AgentData<EightPuzzleState> MakeMove(AgentData<EightPuzzleState> newStateData) => newStateData;
+        public Agent<EightPuzzleState>.AgentData MakeMove(Agent<EightPuzzleState>.AgentData newStateData) => newStateData;
 
         public static float DistanceFromSolved(EightPuzzleState state)
         {

@@ -6,6 +6,6 @@ namespace Pathfinding.Environments
     {
         public TState GoalState { get; }
         public List<Edge<TState>> GetSuccessors(IState state);
-        public AgentData<TState> MakeMove(AgentData<TState> newState);
+        public Agent<TState>.AgentData MakeMove(Agent<TState>.AgentData newState);
     }
 }
