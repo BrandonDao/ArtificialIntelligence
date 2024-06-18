@@ -33,7 +33,7 @@ namespace Pathfinding
                 startingState: start,
                 frontier: new PriorityQueueFrontier<EightPuzzleState>(),
                 environment: environment,
-                getPriority: (Agent<EightPuzzleState>.Data curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
+                getPriority: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
                 => curr.DistanceFromStart + edge.Weight + EightPuzzleEnvironment.DistanceFromSolved(edge.End));
 
             while (!eightPuzzleAgent.MakeMove((state) => state == environment.GoalState)) ;

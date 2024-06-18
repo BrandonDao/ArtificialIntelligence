@@ -70,7 +70,7 @@ namespace Pathfinding.Environments
             return newStateEdges;
         }
 
-        public Agent<EightPuzzleState>.Data MakeMove(Agent<EightPuzzleState>.Data newStateData) => newStateData;
+        public AgentData<EightPuzzleState> MakeMove(AgentData<EightPuzzleState> newStateData) => newStateData;
 
         public static float DistanceFromSolved(EightPuzzleState state)
         {

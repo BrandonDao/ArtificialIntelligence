@@ -4,38 +4,29 @@ using Pathfinding.States;
 
 namespace Pathfinding.Agents
 {
-    public class Agent<TState>
+    public partial class Agent<TState> : IAgent<TState>
         where TState : IState
     {
-        public class Data(TState state, StateToken<IState> stateToken, Data? founder, float priority, float distance)
-        {
-            public TState State { get; } = state;
-            public StateToken<IState> StateToken { get; } = stateToken;
-            public Data? Predecessor { get; } = founder;
-            public float Priority { get; } = priority;
-            public float DistanceFromStart { get; } = distance;
-        }
-
         private readonly IFrontier<TState> frontier;
         private readonly IEnvironment<TState> environment;
-        private readonly Func<Data, HashSet<TState>, Edge<TState>, float> getPriority;
+        private readonly Func<AgentData<TState>, HashSet<TState>, Edge<TState>, float> getPriority;
 
         private readonly HashSet<TState> visited;
 
-        private Data currentData;
+        private AgentData<TState> currentData;
 
         public Agent(
             TState startingState,
             IFrontier<TState> frontier,
             IEnvironment<TState> environment,
-            Func<Data, HashSet<TState>, Edge<TState>, float> getPriority)
+            Func<AgentData<TState>, HashSet<TState>, Edge<TState>, float> getPriority)
         {
             visited = [];
             this.frontier = frontier;
             this.environment = environment;
             this.getPriority = getPriority;
 
-            currentData = new Data(startingState, new StateToken<IState>(startingState), founder: null, priority: 0, distance: 0);
+            currentData = new AgentData<TState>(startingState, new StateToken<IState>(startingState), founder: null, priority: 0, distance: 0);
 
             environment.RegisterAgent(currentData.StateToken, currentData.State);
 
@@ -53,7 +44,7 @@ namespace Pathfinding.Agents
             {
                 float newPriority = getPriority.Invoke(currentData, visited, edge);
 
-                Data nextData = new(
+                AgentData<TState> nextData = new(
                     state: edge.End,
                     stateToken: edge.EndStateToken,
                     founder: currentData,
@@ -74,6 +65,6 @@ namespace Pathfinding.Agents
             return false;
         }
 
-        public Data GetFinishedState() => currentData;
+        public AgentData<TState> GetFinishedState() => currentData;
     }
 }

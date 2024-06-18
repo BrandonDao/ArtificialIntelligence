@@ -7,7 +7,7 @@ namespace Pathfinding.Frontiers
         where TState : IState
     {
         public int Count { get; }
-        public void Enqueue(Agent<TState>.Data data, float priority);
-        public Agent<TState>.Data Dequeue();
+        public void Enqueue(AgentData<TState> data, float priority);
+        public AgentData<TState> Dequeue();
     }
 }
