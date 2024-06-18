@@ -1,9 +1,12 @@
-﻿namespace Pathfinding.Frontiers
+﻿using Pathfinding.States;
+
+namespace Pathfinding.Frontiers
 {
-    public interface IFrontier<T>
+    public interface IFrontier<TState>
+        where TState : IState
     {
         public int Count { get; }
-        public void Enqueue(Agent.Data<T> vertex, float priority);
-        public Agent.Data<T> Dequeue();
+        public void Enqueue(AgentData<TState> data, float priority);
+        public AgentData<TState> Dequeue();
     }
 }

@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace Pathfinding.Environments
 {
-    public class EightPuzzle : IEnvironment<EightPuzzleState>
+    public class EightPuzzleEnvironment : IEnvironment<EightPuzzleState>
     {
         private static EightPuzzleState goalState = new(board: new int[,]
             {
@@ -61,6 +61,8 @@ namespace Pathfinding.Environments
             }
             return newStates;
         }
+
+        public AgentData<EightPuzzleState> MakeMove(AgentData<EightPuzzleState> newStateData) => newStateData;
 
         public static float DistanceFromSolved(EightPuzzleState state)
         {

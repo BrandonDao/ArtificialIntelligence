@@ -1,57 +1,59 @@
 ﻿using Pathfinding.Environments;
 using Pathfinding.Frontiers;
 using Pathfinding.States;
-using System.Diagnostics;
 
 namespace Pathfinding
 {
-    public static class Agent
+    public class Agent<TState, TFrontier>
+        where TState : IState
+        where TFrontier : IFrontier<TState>, new()
     {
-        [DebuggerDisplay("Wrapper: {Vertex.Value}")]
-        public class Data<T>(T value, Data<T>? founder, float priority, float distance)
+        private readonly IFrontier<TState> frontier;
+        private readonly IEnvironment<TState> environment;
+        private readonly Func<AgentData<TState>, HashSet<TState>, Edge<TState>, float> getPriority;
+
+        private readonly HashSet<TState> visited;
+
+        public Agent(TState startingState, IEnvironment<TState> environment, Func<AgentData<TState>, HashSet<TState>, Edge<TState>, float> getPriority)
         {
-            public T Value { get; set; } = value;
-            public Data<T>? Predecessor { get; set; } = founder;
-            public float Priority { get; set; } = priority;
-            public float DistanceFromStart { get; set; } = distance;
+            frontier = new TFrontier();
+            visited = [];
+            this.getPriority = getPriority;
+            this.environment = environment;
+            frontier.Enqueue(new AgentData<TState>(startingState, founder: null, priority: 0, distance: 0), priority: 0);
         }
 
-        public static Data<TState> FindPath<TState, TFrontier>(
-                TState start,
-                IEnvironment<TState> environment,
-                Func<Data<TState>, HashSet<TState>, Edge<TState>, float> getPriority)
-            where TState : IState
-            where TFrontier : IFrontier<TState>, new()
+        public bool MakeMove(out AgentData<TState>? finalState)
         {
-            IFrontier<TState> frontier = new TFrontier();
-            frontier.Enqueue(new(start, founder: null, priority: 0, distance: 0), priority: 0);
+            finalState = null;
 
-            HashSet<TState> visited = [];
+            AgentData<TState> currState = frontier.Dequeue();
+            visited.Add(currState.State);
 
-            while (frontier.Count > 0)
+            List<Edge<TState>> children = environment.GetSuccessors(currState.State);
+
+            foreach (Edge<TState> edge in children)
             {
-                Data<TState> currState = frontier.Dequeue();
-                visited.Add(currState.Value);
+                float newPriority = getPriority.Invoke(currState, visited, edge);
 
-                List<Edge<TState>> children = environment.GetSuccessors(currState.Value);
+                AgentData<TState> nextStateData = new(
+                    value: edge.End,
+                    founder: currState,
+                    priority: newPriority,
+                    distance: currState.DistanceFromStart + edge.Weight);
 
-                foreach (Edge<TState> edge in children)
+                nextStateData = environment.MakeMove(nextStateData);
+
+                if (nextStateData.State.Equals(environment.GoalState))
                 {
-                    float newPriority = getPriority.Invoke(currState, visited, edge);
-
-                    Data<TState> nextState = new(
-                        value: edge.End,
-                        founder: currState,
-                        priority: newPriority,
-                        distance: currState.DistanceFromStart + edge.Weight);
-
-                    if (nextState.Value.Equals(environment.GoalState)) return nextState;
-
-                    frontier.Enqueue(nextState, newPriority);
+                    finalState = nextStateData;
+                    return true;
                 }
+
+                frontier.Enqueue(nextStateData, newPriority);
             }
 
-            throw new ArgumentException("Invalid search parameters!");
+            return false;
         }
     }
 }

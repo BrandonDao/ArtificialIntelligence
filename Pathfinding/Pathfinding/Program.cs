@@ -26,16 +26,22 @@ namespace Pathfinding
             },
             new Point(2, 2));
 
-            var solvedState = Agent.FindPath<EightPuzzleState, PriorityQueueFrontier<EightPuzzleState>, EightPuzzle>(
-                start: start,
-                getPriority: (Agent.Data<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
-                    => curr.DistanceFromStart + edge.Weight + EightPuzzle.DistanceFromSolved(edge.End));
+            Agent<EightPuzzleState, PriorityQueueFrontier<EightPuzzleState>> eightPuzzleAgent = new(
+                start,
+                new EightPuzzleEnvironment(),
+                getPriority: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
+                => curr.DistanceFromStart + edge.Weight + EightPuzzleEnvironment.DistanceFromSolved(edge.End));
 
-            for (var a = solvedState; a != null; a = a.Predecessor)
+            AgentData<EightPuzzleState>? b;
+
+            while (!eightPuzzleAgent.MakeMove(out b)) ;
+
+
+            for (var a = b; a != null; a = a.Predecessor)
             {
-                Console.WriteLine($"{a.Value.Board[0, 0]}|{a.Value.Board[0, 1]}|{a.Value.Board[0, 2]}\n"
-                                + $"{a.Value.Board[1, 0]}|{a.Value.Board[1, 1]}|{a.Value.Board[1, 2]}\n"
-                                + $"{a.Value.Board[2, 0]}|{a.Value.Board[2, 1]}|{a.Value.Board[2, 2]}\n");
+                Console.WriteLine($"{a.State.Board[0, 0]}|{a.State.Board[0, 1]}|{a.State.Board[0, 2]}\n"
+                                + $"{a.State.Board[1, 0]}|{a.State.Board[1, 1]}|{a.State.Board[1, 2]}\n"
+                                + $"{a.State.Board[2, 0]}|{a.State.Board[2, 1]}|{a.State.Board[2, 2]}\n");
             }
 
 

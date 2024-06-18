@@ -1,12 +1,15 @@
-﻿namespace Pathfinding.Frontiers
+﻿using Pathfinding.States;
+
+namespace Pathfinding.Frontiers
 {
-    public class PriorityQueueFrontier<T>() : IFrontier<T>
+    public class PriorityQueueFrontier<TState>() : IFrontier<TState>
+        where TState : IState
     {
-        private readonly PriorityQueue<Agent.Data<T>, float> vertices = new();
+        private readonly PriorityQueue<AgentData<TState>, float> vertices = new();
 
         public int Count => vertices.Count;
 
-        public void Enqueue(Agent.Data<T> vertex, float priority) => vertices.Enqueue(vertex, priority);
-        public Agent.Data<T> Dequeue() => vertices.Dequeue();
+        public void Enqueue(AgentData<TState> vertex, float priority) => vertices.Enqueue(vertex, priority);
+        public AgentData<TState> Dequeue() => vertices.Dequeue();
     }
 }
