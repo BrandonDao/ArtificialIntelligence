@@ -62,7 +62,8 @@ namespace Pathfinding.Environments
                     newStateEdges.Add(new Edge<EightPuzzleState>(
                         start: castedState,
                         end: new EightPuzzleState(newBoard, newEmptySpace),
-                        weight: 1));
+                        weight: 1,
+                        probability: 1));
 
                     stateMap.Add(newStateEdges[^1].EndStateToken, newStateEdges[^1].End);
                 }

@@ -4,7 +4,7 @@ using Pathfinding.States;
 
 namespace Pathfinding.Agents
 {
-    public partial class Agent<TState> : IAgent<TState>
+    public class Agent<TState> : IAgent<TState>
         where TState : IState
     {
         private readonly IFrontier<TState> frontier;
@@ -50,8 +50,6 @@ namespace Pathfinding.Agents
                     founder: currentData,
                     priority: newPriority,
                     distance: currentData.DistanceFromStart + edge.Weight);
-
-                nextData = environment.MakeMove(nextData);
 
                 if (hasReachedGoal.Invoke(nextData.State))
                 {
