@@ -1,80 +1,79 @@
-﻿
-using System.Numerics;
-
-namespace Expectimax
+﻿namespace Expectimax
 {
-    public struct Move<TState, TPlayer, TScore>(TState result, double probability)
-        where TState : IState<TState, TPlayer, TScore>
-        where TPlayer : notnull
-        where TScore : INumber<TScore>
+    public struct Move<TState>(TState result, double probability)
+        where TState : IState<TState>
     {
         public TState Result = result;
         public double Probability = probability;
     }
 
-    public interface IState<TState, TPlayer, TScore>
-        where TState : IState<TState, TPlayer, TScore>
-        where TPlayer : notnull
-        where TScore : INumber<TScore>
+    public interface IState<TState>
+        where TState : IState<TState>
     {
-        TPlayer Player { get; }
+        bool IsMaximizer { get; }
         bool IsTerminal { get; }
         bool IsDeterministic { get; }
-        Dictionary<TPlayer, TScore> ScoreByPlayer { get; }
-        Move<TState, TPlayer, TScore>[] GetSuccessors();
+        double Score { get; set; }
+        Move<TState>[] GetSuccessors();
     }
 
 
-    public class Expectimax<TState, TPlayer, TScore>
-        where TState : IState<TState, TPlayer, TScore>
-        where TPlayer : notnull
-        where TScore : INumber<TScore>
+    public class Expectimax<TState>
+        where TState : IState<TState>
     {
         public TState Root { get; }
 
+        public Expectimax(TState startState)
+        {
+            Root = startState;
+        }
+
         public void PropagateScores()
         {
+            PropogateScores(Root);
 
-
-            TScore FindScore(TState state)
+            static double PropogateScores(TState state)
             {
-                if (state.IsTerminal) return state.ScoreByPlayer[state.Player];
+                if (state.IsTerminal)
+                {
+                    return state.Score;
+                }
 
-                Move<TState, TPlayer, TScore>[] moves = state.GetSuccessors();
+                Move<TState>[] moves = state.GetSuccessors();
+                IEnumerable<double> scores = moves.Select((move) => move.Probability * PropogateScores(move.Result));
 
                 if (state.IsDeterministic)
                 {
-                    IEnumerable<TScore> scores = moves.Select((move) => FindScore(move.Result));
-
-                    return moves.MaxBy((move) => move.Result.ScoreByPlayer[state.Player]).Result.ScoreByPlayer[state.Player];
+                    state.Score = state.IsMaximizer ? scores.Max() : scores.Min();
                 }
                 else
                 {
-                    nextState = 
+                    state.Score = scores.Sum();
                 }
 
+                return state.Score;
             }
         }
     }
 
 
 
-    public readonly struct ExampleState(
+    public class ExampleState(
             bool isTerminal,
             bool isDeterministic,
-            int player,
-            Move<ExampleState, int, int>[] children,
-            Dictionary<int, int> scoreByPlayer)
-        : IState<ExampleState, int, int>
+            bool isMax,
+            Move<ExampleState>[] children,
+            double score)
+        : IState<ExampleState>
     {
-        public int Player { get; } = player;
+        public bool IsMaximizer { get; } = isMax;
         public bool IsTerminal { get; } = isTerminal;
         public bool IsDeterministic { get; } = isDeterministic;
-        public Dictionary<int, int> ScoreByPlayer { get; } = scoreByPlayer;
+        public double Score { get; set; } = score;
 
-        private readonly Move<ExampleState, int, int>[] children = children;
+        private readonly Move<ExampleState>[] children = children;
 
-        public readonly Move<ExampleState, int, int>[] GetSuccessors() => children;
+        public Move<ExampleState>[] GetSuccessors() => children;
     }
 
     #region old
@@ -298,64 +297,69 @@ namespace Expectimax
             ExampleState root = new(
                 isTerminal: false,
                 isDeterministic: true,
-                player: 0,
+                isMax: true,
                 children: [
                     new(result: new(isTerminal: false,
                                     isDeterministic: false,
-                                    player: 1,
+                                    isMax: false,
                                     children: [
                                         new(result: new(isTerminal: true,
                                                         isDeterministic: true,
-                                                        player: 0,
+                                                        isMax: true,
                                                         children: [],
-                                                        scoreByPlayer: new() { [0] = -3 }),
+                                                        score: -3),
                                             probability: 0.33),
                                         new(result: new(isTerminal: true,
                                                         isDeterministic: true,
-                                                        player: 0,
+                                                        isMax: true,
                                                         children: [],
-                                                        scoreByPlayer: new() { [0] = 6 }),
+                                                        score: 6),
                                             probability: 0.67)],
-                                    scoreByPlayer: []),
+                                    score: 0),
                         probability: 1),
                     new(result: new(isTerminal: false,
                                     isDeterministic: true,
-                                    player: 1,
+                                    isMax: false,
                                     children: [
                                         new(result: new(isTerminal: true,
                                                         isDeterministic: true,
-                                                        player: 0,
+                                                        isMax: true,
                                                         children: [],
-                                                        scoreByPlayer: new() { [0] = 7 }),
+                                                        score: 7),
                                             probability: 1),
                                         new(result: new(isTerminal: true,
                                                         isDeterministic: true,
-                                                        player: 0,
+                                                        isMax: true,
                                                         children: [],
-                                                        scoreByPlayer: new() { [0] = 0 }),
+                                                        score: 0),
                                             probability: 1)],
-                                    scoreByPlayer: []),
+                                    score: 0),
                         probability: 1),
                     new(result: new(isTerminal: false,
                                     isDeterministic: false,
-                                    player: 1,
+                                    isMax: false,
                                     children: [
                                         new(result: new(isTerminal: true,
                                                         isDeterministic: true,
-                                                        player: 0,
+                                                        isMax: true,
                                                         children: [],
-                                                        scoreByPlayer: new() { [0] = 3 }),
+                                                        score: 3),
                                             probability: 0.33),
                                         new(result: new(isTerminal: true,
                                                         isDeterministic: true,
-                                                        player: 0,
+                                                        isMax: true,
                                                         children: [],
-                                                        scoreByPlayer: new() { [0] = 0 }),
+                                                        score: 0),
                                             probability: 0.67)],
-                                    scoreByPlayer: []),
+                                    score: 0),
                         probability: 1)],
-                scoreByPlayer: []);
+                score: 0);
 
+
+            Expectimax<ExampleState> tree = new(root);
+            tree.PropagateScores();
+
+            ;
         }
     }
 }
