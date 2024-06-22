@@ -6,11 +6,11 @@ namespace Pathfinding.Frontiers
     public class PriorityQueueFrontier<TState>() : IFrontier<TState>
         where TState : IState
     {
-        private readonly PriorityQueue<AgentData<TState>, float> vertices = new();
+        private readonly PriorityQueue<AgentData<TState>, float> priorityQ = new();
 
-        public int Count => vertices.Count;
+        public int Count => priorityQ.Count;
 
-        public void Enqueue(AgentData<TState> vertex, float priority) => vertices.Enqueue(vertex, priority);
-        public AgentData<TState> Dequeue() => vertices.Dequeue();
+        public void Enqueue(AgentData<TState> vertex, float priority) => priorityQ.Enqueue(vertex, priority);
+        public AgentData<TState> Dequeue() => priorityQ.Dequeue();
     }
 }
