@@ -13,7 +13,7 @@ namespace SharedLibrary.Agents
 
         private readonly HashSet<TState> visited;
 
-        private AgentData<TState> currentData;
+        public AgentData<TState> CurrentData { get; private set; }
 
         public PlanningAgent(
             TState startingState,
@@ -26,36 +26,36 @@ namespace SharedLibrary.Agents
             this.environment = environment;
             this.getScore = getScore;
 
-            currentData = new AgentData<TState>(startingState, new StateToken<IState>(startingState), founder: null, priority: 0, cumulativeCost: 0);
+            CurrentData = new AgentData<TState>(startingState, new StateToken<IState>(startingState), founder: null, priority: 0, cumulativeCost: 0);
 
-            environment.RegisterAgent(currentData.StateToken, currentData.State);
+            environment.RegisterAgent(CurrentData.StateToken, CurrentData.State);
 
-            frontier.Enqueue(currentData, currentData.Priority);
+            frontier.Enqueue(CurrentData, CurrentData.Priority);
         }
 
         public bool MakeMove(Predicate<TState> hasReachedGoal)
         {
-            currentData = frontier.Dequeue();
-            visited.Add(currentData.State);
+            CurrentData = frontier.Dequeue();
+            visited.Add(CurrentData.State);
 
-            List<Movement<TState>> movements = environment.GetMovements(currentData.StateToken);
+            List<Movement<TState>> movements = environment.GetMovements(CurrentData.StateToken);
 
             foreach (var move in movements)
             {
                 foreach(Movement<TState>.Result result in move.Results)
                 {
-                    float newScore = getScore.Invoke(currentData, visited, result);
+                    float newScore = getScore.Invoke(CurrentData, visited, result);
 
                     AgentData<TState> nextData = new(
                         state: result.SuccessorState,
                         stateToken: result.SuccessorStateToken,
-                        founder: currentData,
+                        founder: CurrentData,
                         priority: newScore,
-                        cumulativeCost: currentData.CumulativeCost + result.Cost);
+                        cumulativeCost: CurrentData.CumulativeCost + result.Cost);
 
                     if (hasReachedGoal.Invoke(nextData.State))
                     {
-                        currentData = nextData;
+                        CurrentData = nextData;
                         return true;
                     }
 
@@ -66,6 +66,6 @@ namespace SharedLibrary.Agents
             return false;
         }
 
-        public AgentData<TState> GetFinishedState() => currentData;
+        public AgentData<TState> GetFinishedState() => CurrentData;
     }
 }

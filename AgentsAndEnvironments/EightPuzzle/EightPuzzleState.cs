@@ -1,6 +1,6 @@
 ﻿using SharedLibrary.States;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
+using Point = Microsoft.Xna.Framework.Point;
 
 namespace SharedLibrary
 {

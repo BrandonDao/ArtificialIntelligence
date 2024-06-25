@@ -1,7 +1,7 @@
 ﻿using SharedLibrary.Agents;
 using SharedLibrary.Environments;
 using SharedLibrary.States;
-using System.Drawing;
+using Point = Microsoft.Xna.Framework.Point;
 
 namespace SharedLibrary
 {
