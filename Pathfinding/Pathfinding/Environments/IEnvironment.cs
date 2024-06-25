@@ -7,7 +7,7 @@ namespace Pathfinding.Environments
     {
         public TState GoalState { get; }
         public void RegisterAgent(StateToken<IState> currentStateToken, TState state);
-        public List<Edge<TState>> GetSuccessors(StateToken<IState> stateToken);
+        public List<Movement<TState>> GetMovements(StateToken<IState> stateToken);
         public AgentData<TState> MakeMove(AgentData<TState> newState);
     }
 }

@@ -34,9 +34,9 @@ namespace Pathfinding.Environments
         public void RegisterAgent(StateToken<IState> currentStateToken, EightPuzzleState state)
             => stateMap.Add(currentStateToken, state);
 
-        public List<Edge<EightPuzzleState>> GetSuccessors(StateToken<IState> stateToken)
+        public List<Movement<EightPuzzleState>> GetMovements(StateToken<IState> stateToken)
         {
-            List<Edge<EightPuzzleState>> newStateEdges = [];
+            List<Movement<EightPuzzleState>> movements = [];
 
             var castedState = stateMap[stateToken];
             stateMap.Remove(stateToken);
@@ -59,16 +59,20 @@ namespace Pathfinding.Environments
                     newBoard[castedState.EmptyTile.X, castedState.EmptyTile.Y] = castedState.Board[newEmptySpace.X, newEmptySpace.Y];
                     newBoard[newEmptySpace.X, newEmptySpace.Y] = 0;
 
-                    newStateEdges.Add(new Edge<EightPuzzleState>(
-                        start: castedState,
-                        end: new EightPuzzleState(newBoard, newEmptySpace),
-                        weight: 1,
-                        probability: 1));
+                    var newState = new EightPuzzleState(newBoard, newEmptySpace);
 
-                    stateMap.Add(newStateEdges[^1].EndStateToken, newStateEdges[^1].End);
+                    movements.Add(new Movement<EightPuzzleState>([
+                        new Movement<EightPuzzleState>.Result(
+                            successor: newState,
+                            successorToken: new StateToken<IState>(newState),
+                            cost: 1,
+                            probability: 1)
+                        ]));
+
+                    stateMap.Add(movements[^1].Results[^1].SuccessorStateToken, movements[^1].Results[^1].SuccessorState);
                 }
             }
-            return newStateEdges;
+            return movements;
         }
 
         public AgentData<EightPuzzleState> MakeMove(AgentData<EightPuzzleState> newStateData) => newStateData;

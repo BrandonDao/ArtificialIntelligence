@@ -29,12 +29,12 @@ namespace Pathfinding
 
             var environment = new EightPuzzleEnvironment();
 
-            Agent<EightPuzzleState> eightPuzzleAgent = new(
+            PlanningAgent<EightPuzzleState> eightPuzzleAgent = new(
                 startingState: start,
                 frontier: new PriorityQueueFrontier<EightPuzzleState>(),
                 environment: environment,
-                getPriority: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Edge<EightPuzzleState> edge)
-                => curr.DistanceFromStart + edge.Weight + EightPuzzleEnvironment.DistanceFromSolved(edge.End));
+                getPriority: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Movement<EightPuzzleState>.Result result)
+                => curr.CumulativeCost + result.Cost + EightPuzzleEnvironment.DistanceFromSolved(result.SuccessorState));
 
             while (!eightPuzzleAgent.MakeMove((state) => state == environment.GoalState)) ;
                 
