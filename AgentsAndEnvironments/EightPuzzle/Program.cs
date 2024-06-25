@@ -1,13 +1,10 @@
 ﻿using Pathfinding.Agents;
-using Pathfinding.Environments;
 using Pathfinding.Frontiers;
-using Pathfinding.States;
 using System.Drawing;
 
 namespace Pathfinding
 {
-
-    public partial class Program
+    public class Program
     {
         private static void Main()
         {
@@ -33,7 +30,7 @@ namespace Pathfinding
                 startingState: start,
                 frontier: new PriorityQueueFrontier<EightPuzzleState>(),
                 environment: environment,
-                getPriority: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Movement<EightPuzzleState>.Result result)
+                getScore: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Movement<EightPuzzleState>.Result result)
                 => curr.CumulativeCost + result.Cost + EightPuzzleEnvironment.DistanceFromSolved(result.SuccessorState));
 
             while (!eightPuzzleAgent.MakeMove((state) => state == environment.GoalState)) ;

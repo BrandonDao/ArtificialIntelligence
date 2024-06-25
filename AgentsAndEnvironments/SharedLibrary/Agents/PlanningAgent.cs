@@ -9,7 +9,7 @@ namespace Pathfinding.Agents
     {
         private readonly IFrontier<TState> frontier;
         private readonly IEnvironment<TState> environment;
-        private readonly Func<AgentData<TState>, HashSet<TState>, Movement<TState>.Result, float> getPriority;
+        private readonly Func<AgentData<TState>, HashSet<TState>, Movement<TState>.Result, float> getScore;
 
         private readonly HashSet<TState> visited;
 
@@ -19,12 +19,12 @@ namespace Pathfinding.Agents
             TState startingState,
             IFrontier<TState> frontier,
             IEnvironment<TState> environment,
-            Func<AgentData<TState>, HashSet<TState>, Movement<TState>.Result, float> getPriority)
+            Func<AgentData<TState>, HashSet<TState>, Movement<TState>.Result, float> getScore)
         {
             visited = [];
             this.frontier = frontier;
             this.environment = environment;
-            this.getPriority = getPriority;
+            this.getScore = getScore;
 
             currentData = new AgentData<TState>(startingState, new StateToken<IState>(startingState), founder: null, priority: 0, cumulativeCost: 0);
 
@@ -44,13 +44,13 @@ namespace Pathfinding.Agents
             {
                 foreach(Movement<TState>.Result result in move.Results)
                 {
-                    float newPriority = getPriority.Invoke(currentData, visited, result);
+                    float newScore = getScore.Invoke(currentData, visited, result);
 
                     AgentData<TState> nextData = new(
                         state: result.SuccessorState,
                         stateToken: result.SuccessorStateToken,
                         founder: currentData,
-                        priority: newPriority,
+                        priority: newScore,
                         cumulativeCost: currentData.CumulativeCost + result.Cost);
 
                     if (hasReachedGoal.Invoke(nextData.State))
@@ -59,7 +59,7 @@ namespace Pathfinding.Agents
                         return true;
                     }
 
-                    frontier.Enqueue(nextData, newPriority);
+                    frontier.Enqueue(nextData, newScore);
                 }
             }
 
