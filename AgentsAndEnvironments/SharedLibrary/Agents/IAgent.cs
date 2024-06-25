@@ -1,6 +1,6 @@
-﻿using Pathfinding.States;
+﻿using SharedLibrary.States;
 
-namespace Pathfinding.Agents
+namespace SharedLibrary.Agents
 {
     public interface IAgent<TState>
         where TState : IState

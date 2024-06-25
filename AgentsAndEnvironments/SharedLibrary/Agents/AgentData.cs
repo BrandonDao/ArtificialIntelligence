@@ -1,6 +1,6 @@
-﻿using Pathfinding.States;
+﻿using SharedLibrary.States;
 
-namespace Pathfinding.Agents
+namespace SharedLibrary.Agents
 {
 
     public class AgentData<TState>(TState state, StateToken<IState> stateToken, AgentData<TState>? founder, float priority, float cumulativeCost)

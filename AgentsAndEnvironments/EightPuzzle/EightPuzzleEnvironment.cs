@@ -1,9 +1,9 @@
-﻿using Pathfinding.Agents;
-using Pathfinding.Environments;
-using Pathfinding.States;
+﻿using SharedLibrary.Agents;
+using SharedLibrary.Environments;
+using SharedLibrary.States;
 using System.Drawing;
 
-namespace Pathfinding
+namespace SharedLibrary
 {
 
     public class EightPuzzleEnvironment() : IEnvironment<EightPuzzleState>

@@ -1,6 +1,6 @@
-﻿using Pathfinding.States;
+﻿using SharedLibrary.States;
 
-namespace Pathfinding
+namespace SharedLibrary
 {
     public class StateToken<TState>(TState state)
         where TState : IState

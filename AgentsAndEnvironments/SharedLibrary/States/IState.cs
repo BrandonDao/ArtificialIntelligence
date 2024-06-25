@@ -1,4 +1,4 @@
-﻿namespace Pathfinding.States
+﻿namespace SharedLibrary.States
 {
         public interface IState;
 }

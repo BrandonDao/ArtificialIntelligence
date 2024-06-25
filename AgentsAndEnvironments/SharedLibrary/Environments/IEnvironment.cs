@@ -1,7 +1,7 @@
-﻿using Pathfinding.Agents;
-using Pathfinding.States;
+﻿using SharedLibrary.Agents;
+using SharedLibrary.States;
 
-namespace Pathfinding.Environments
+namespace SharedLibrary.Environments
 {
     public interface IEnvironment<TState> where TState : IState
     {

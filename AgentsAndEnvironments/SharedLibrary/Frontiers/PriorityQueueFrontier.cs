@@ -1,7 +1,7 @@
-﻿using Pathfinding.Agents;
-using Pathfinding.States;
+﻿using SharedLibrary.Agents;
+using SharedLibrary.States;
 
-namespace Pathfinding.Frontiers
+namespace SharedLibrary.Frontiers
 {
     public class PriorityQueueFrontier<TState>() : IFrontier<TState>
         where TState : IState

@@ -1,6 +1,6 @@
-﻿using Pathfinding.States;
+﻿using SharedLibrary.States;
 
-namespace Pathfinding
+namespace SharedLibrary
 {
     public readonly struct Movement<TState>(Movement<TState>.Result[] results)
         where TState : IState

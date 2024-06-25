@@ -1,8 +1,8 @@
-﻿using Pathfinding.Environments;
-using Pathfinding.Frontiers;
-using Pathfinding.States;
+﻿using SharedLibrary.Environments;
+using SharedLibrary.Frontiers;
+using SharedLibrary.States;
 
-namespace Pathfinding.Agents
+namespace SharedLibrary.Agents
 {
     public class PlanningAgent<TState> : IAgent<TState>
         where TState : IState

@@ -1,8 +1,8 @@
-﻿using Pathfinding.States;
+﻿using SharedLibrary.States;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 
-namespace Pathfinding
+namespace SharedLibrary
 {
     public struct EightPuzzleState(int[,] board, Point emptyTile) : IState
     {
