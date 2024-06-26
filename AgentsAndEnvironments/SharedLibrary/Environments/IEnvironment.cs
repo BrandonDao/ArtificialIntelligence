@@ -1,13 +1,16 @@
-﻿using SharedLibrary.Agents;
+﻿using SharedLibrary.Movement;
+using SharedLibrary.Movement.Results;
 using SharedLibrary.States;
 
 namespace SharedLibrary.Environments
 {
-    public interface IEnvironment<TState> where TState : IState
+    public interface IEnvironment<TState, TMovement, TResult>
+        where TState : IState
+        where TMovement : IMovement<TState, TResult>
+        where TResult : IResult<TState>
     {
-        public TState GoalState { get; }
         public void RegisterAgent(StateToken<IState> currentStateToken, TState state);
-        public List<Movement<TState>> GetMovements(StateToken<IState> stateToken);
-        public AgentData<TState> MakeMove(AgentData<TState> newState);
+        public List<TMovement> GetMovements(StateToken<IState> stateToken);
+        public TResult MakeMove(TMovement movement);
     }
 }

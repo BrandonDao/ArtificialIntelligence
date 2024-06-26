@@ -1,5 +1,7 @@
 ﻿using SharedLibrary.Environments;
 using SharedLibrary.Frontiers;
+using SharedLibrary.Movement;
+using SharedLibrary.Movement.Results;
 using SharedLibrary.States;
 
 namespace SharedLibrary.Agents
@@ -8,8 +10,8 @@ namespace SharedLibrary.Agents
         where TState : IState
     {
         private readonly IFrontier<TState> frontier;
-        private readonly IEnvironment<TState> environment;
-        private readonly Func<AgentData<TState>, HashSet<TState>, Movement<TState>.Result, float> getScore;
+        private readonly IEnvironment<TState, PlanningMovement<TState>, PlanningResult<TState>> environment;
+        private readonly Func<AgentData<TState>, HashSet<TState>, PlanningResult<TState>, float> getScore;
 
         private readonly HashSet<TState> visited;
 
@@ -18,8 +20,8 @@ namespace SharedLibrary.Agents
         public PlanningAgent(
             TState startingState,
             IFrontier<TState> frontier,
-            IEnvironment<TState> environment,
-            Func<AgentData<TState>, HashSet<TState>, Movement<TState>.Result, float> getScore)
+            IEnvironment<TState, PlanningMovement<TState>, PlanningResult<TState>> environment,
+            Func<AgentData<TState>, HashSet<TState>, PlanningResult<TState>, float> getScore)
         {
             visited = [];
             this.frontier = frontier;
@@ -38,11 +40,11 @@ namespace SharedLibrary.Agents
             CurrentData = frontier.Dequeue();
             visited.Add(CurrentData.State);
 
-            List<Movement<TState>> movements = environment.GetMovements(CurrentData.StateToken);
+            List<PlanningMovement<TState>> movements = environment.GetMovements(CurrentData.StateToken);
 
             foreach (var move in movements)
             {
-                foreach(Movement<TState>.Result result in move.Results)
+                foreach(PlanningResult<TState> result in move.Results)
                 {
                     float newScore = getScore.Invoke(CurrentData, visited, result);
 

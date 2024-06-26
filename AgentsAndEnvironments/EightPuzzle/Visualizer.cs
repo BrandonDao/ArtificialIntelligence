@@ -3,6 +3,8 @@ using MonoGame.Extended;
 using SharedLibrary;
 using SharedLibrary.Agents;
 using SharedLibrary.Frontiers;
+using SharedLibrary.Movement;
+using SharedLibrary.Movement.Results;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -127,7 +129,7 @@ namespace EightPuzzle
                 startingState: new(tiles, emptyTile),
                 frontier: new PriorityQueueFrontier<EightPuzzleState>(),
                 environment: environment,
-                getScore: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, Movement<EightPuzzleState>.Result result)
+                getScore: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, SharedLibrary.Movement.Results.PlanningResult<EightPuzzleState> result)
                     => curr.CumulativeCost + result.Cost + EightPuzzleEnvironment.DistanceFromSolved(result.SuccessorState));
         }
     }

@@ -1,12 +1,14 @@
 ﻿using SharedLibrary.Agents;
 using SharedLibrary.Environments;
+using SharedLibrary.Movement;
+using SharedLibrary.Movement.Results;
 using SharedLibrary.States;
 using Point = Microsoft.Xna.Framework.Point;
 
 namespace SharedLibrary
 {
 
-    public class EightPuzzleEnvironment() : IEnvironment<EightPuzzleState>
+    public class EightPuzzleEnvironment() : IEnvironment<EightPuzzleState, PlanningMovement<EightPuzzleState>, PlanningResult<EightPuzzleState>>
     {
         private static EightPuzzleState goalState = new(board: new int[,]
             {
@@ -31,17 +33,17 @@ namespace SharedLibrary
         private static readonly List<Point> moves = [new(1, 0), new(-1, 0), new(0, 1), new(0, -1)];
 
         private readonly Dictionary<StateToken<IState>, EightPuzzleState> stateMap = [];
-        private readonly Dictionary<EightPuzzleState, List<Movement<EightPuzzleState>>> movementMemoMap = [];
+        private readonly Dictionary<EightPuzzleState, List<PlanningMovement<EightPuzzleState>>> movementMemoMap = [];
 
         public void RegisterAgent(StateToken<IState> currentStateToken, EightPuzzleState state)
             => stateMap.Add(currentStateToken, state);
 
-        public List<Movement<EightPuzzleState>> GetMovements(StateToken<IState> stateToken)
+        public List<PlanningMovement<EightPuzzleState>> GetMovements(StateToken<IState> stateToken)
         {
             var castedState = stateMap[stateToken];
             stateMap.Remove(stateToken);
 
-            if (movementMemoMap.TryGetValue(castedState, out List<Movement<EightPuzzleState>>? movements)) return movements;
+            if (movementMemoMap.TryGetValue(castedState, out List<PlanningMovement<EightPuzzleState>>? movements)) return movements;
 
             movements = [];
 
@@ -65,8 +67,8 @@ namespace SharedLibrary
 
                     var newState = new EightPuzzleState(newBoard, newEmptySpace);
 
-                    movements.Add(new Movement<EightPuzzleState>([
-                        new Movement<EightPuzzleState>.Result(
+                    movements.Add(new PlanningMovement<EightPuzzleState>([
+                        new PlanningResult<EightPuzzleState>(
                             successor: newState,
                             successorToken: new StateToken<IState>(newState),
                             cost: 1,
@@ -79,7 +81,7 @@ namespace SharedLibrary
             return movements;
         }
 
-        public AgentData<EightPuzzleState> MakeMove(AgentData<EightPuzzleState> newStateData) => newStateData;
+        public PlanningResult<EightPuzzleState> MakeMove(PlanningMovement<EightPuzzleState> movement) => movement.Results[0];
 
         public static float DistanceFromSolved(EightPuzzleState state)
         {
