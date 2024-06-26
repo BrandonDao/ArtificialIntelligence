@@ -55,13 +55,15 @@ partial class Form1
         // 
         // animationSpeedTrackbar
         // 
+        animationSpeedTrackbar.LargeChange = 100;
         animationSpeedTrackbar.Location = new Point(444, 30);
         animationSpeedTrackbar.Maximum = 1000;
         animationSpeedTrackbar.Minimum = 50;
         animationSpeedTrackbar.Name = "animationSpeedTrackbar";
         animationSpeedTrackbar.Size = new Size(344, 45);
+        animationSpeedTrackbar.SmallChange = 50;
         animationSpeedTrackbar.TabIndex = 1;
-        animationSpeedTrackbar.TickFrequency = 50;
+        animationSpeedTrackbar.TickFrequency = 25;
         animationSpeedTrackbar.Value = 250;
         animationSpeedTrackbar.Scroll += AnimationSpeedTrackbar_Scroll;
         // 

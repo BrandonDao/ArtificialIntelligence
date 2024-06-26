@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using SharedLibrary;
 using SharedLibrary.Agents;
@@ -7,6 +6,7 @@ using SharedLibrary.Frontiers;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
+using Texture2D = Microsoft.Xna.Framework.Graphics.Texture2D;
 
 namespace EightPuzzle
 {
@@ -48,7 +48,7 @@ namespace EightPuzzle
             displayStates = [];
             environment = new EightPuzzleEnvironment();
 
-            LoadTiles("426370158");
+            LoadTiles(new int[3, 3] { { 4, 2, 6 }, { 3, 0, 7 }, { 1, 5, 8 } }, new Point(1, 1));
 
             while (!eightPuzzleAgent.MakeMove((state) => state == environment.GoalState)) ;
 
@@ -64,7 +64,7 @@ namespace EightPuzzle
         protected override void Update(GameTime gameTime)
         {
             if (IsPaused) return;
-            
+
             animationTimer += gameTime.ElapsedGameTime;
 
             if (animationTimer > AnimationDelay)
@@ -121,23 +121,8 @@ namespace EightPuzzle
         {
             currentDisplayState = displayStates.First;
         }
-        public void LoadTiles(string input)
+        public void LoadTiles(int[,] tiles, Point emptyTile)
         {
-            var tiles = new int[3,3];
-            var emptyTile = Point.Zero;
-
-            for (int r = 0; r < 3; r++)
-            {
-                for (int c = 0; c < 3; c++)
-                {
-                    tiles[r, c] = input[r * 3 + c] - '0';
-
-                    if (input[r * 3 + c] == '0')
-                    {
-                        emptyTile = new Point(r, c);
-                    }
-                }
-            }
             eightPuzzleAgent = new(
                 startingState: new(tiles, emptyTile),
                 frontier: new PriorityQueueFrontier<EightPuzzleState>(),
