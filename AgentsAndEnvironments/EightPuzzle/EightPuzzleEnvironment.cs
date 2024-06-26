@@ -31,16 +31,19 @@ namespace SharedLibrary
         private static readonly List<Point> moves = [new(1, 0), new(-1, 0), new(0, 1), new(0, -1)];
 
         private readonly Dictionary<StateToken<IState>, EightPuzzleState> stateMap = [];
+        private readonly Dictionary<EightPuzzleState, List<Movement<EightPuzzleState>>> movementMemoMap = [];
 
         public void RegisterAgent(StateToken<IState> currentStateToken, EightPuzzleState state)
             => stateMap.Add(currentStateToken, state);
 
         public List<Movement<EightPuzzleState>> GetMovements(StateToken<IState> stateToken)
         {
-            List<Movement<EightPuzzleState>> movements = [];
-
             var castedState = stateMap[stateToken];
             stateMap.Remove(stateToken);
+
+            if (movementMemoMap.TryGetValue(castedState, out List<Movement<EightPuzzleState>>? movements)) return movements;
+
+            movements = [];
 
             foreach (var move in moves)
             {
