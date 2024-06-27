@@ -6,6 +6,5 @@ namespace SharedLibrary.Agents
         where TState : IState
     {
         public bool MakeMove(Predicate<TState> hasReachedGoal);
-        public AgentData<TState> GetFinishedState();
     }
 }

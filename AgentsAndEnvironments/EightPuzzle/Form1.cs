@@ -87,7 +87,7 @@ public partial class Form1 : Form
                 inversionCount++;
             }
         }
-        if ((inversionCount & 1) != 0) return; 
+        if ((inversionCount & 1) != 0) return;
 
         visualizer1.LoadTiles(tiles, emptyTile);
     }

@@ -3,11 +3,11 @@ using SharedLibrary.Environments;
 using SharedLibrary.Movement;
 using SharedLibrary.Movement.Results;
 using SharedLibrary.States;
+using System.CodeDom;
 using Point = Microsoft.Xna.Framework.Point;
 
 namespace SharedLibrary
 {
-
     public class EightPuzzleEnvironment() : IEnvironment<EightPuzzleState, PlanningMovement<EightPuzzleState>, PlanningResult<EightPuzzleState>>
     {
         private static EightPuzzleState goalState = new(board: new int[,]
@@ -16,7 +16,7 @@ namespace SharedLibrary
                 { 4,5,6 },
                 { 7,8,0 }
             }, emptyTile: new Point(2, 2));
-        public EightPuzzleState GoalState => goalState;
+        public static EightPuzzleState GoalState => goalState;
 
         private static readonly Dictionary<int, Point> TileToPosition = new()
         {
@@ -35,13 +35,18 @@ namespace SharedLibrary
         private readonly Dictionary<StateToken<IState>, EightPuzzleState> stateMap = [];
         private readonly Dictionary<EightPuzzleState, List<PlanningMovement<EightPuzzleState>>> movementMemoMap = [];
 
-        public void RegisterAgent(StateToken<IState> currentStateToken, EightPuzzleState state)
-            => stateMap.Add(currentStateToken, state);
+        private readonly Dictionary<IAgent<EightPuzzleState>, EightPuzzleState> agentStateMap = [];
 
-        public List<PlanningMovement<EightPuzzleState>> GetMovements(StateToken<IState> stateToken)
+        public void RegisterAgent(IAgent<EightPuzzleState> agent, EightPuzzleState startState, StateToken<IState> startStateToken)
         {
-            var castedState = stateMap[stateToken];
-            stateMap.Remove(stateToken);
+            agentStateMap.Add(agent, startState);
+            stateMap.Add(startStateToken, startState);
+        }
+
+        public List<PlanningMovement<EightPuzzleState>> GetMovements(IAgent<EightPuzzleState> agent, StateToken<IState> currentStateToken)
+        {
+            var castedState = stateMap[currentStateToken];
+            stateMap.Remove(currentStateToken);
 
             if (movementMemoMap.TryGetValue(castedState, out List<PlanningMovement<EightPuzzleState>>? movements)) return movements;
 
@@ -80,6 +85,7 @@ namespace SharedLibrary
             }
             return movements;
         }
+        public List<PlanningMovement<EightPuzzleState>> GetMovements(IAgent<EightPuzzleState> agent) => throw new NotImplementedException();
 
         public PlanningResult<EightPuzzleState> MakeMove(PlanningMovement<EightPuzzleState> movement) => movement.Results[0];
 

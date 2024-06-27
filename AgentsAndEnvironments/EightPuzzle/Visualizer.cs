@@ -3,8 +3,8 @@ using MonoGame.Extended;
 using SharedLibrary;
 using SharedLibrary.Agents;
 using SharedLibrary.Frontiers;
-using SharedLibrary.Movement;
 using SharedLibrary.Movement.Results;
+using SharedLibrary.States;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -52,9 +52,9 @@ namespace EightPuzzle
 
             LoadTiles(new int[3, 3] { { 4, 2, 6 }, { 3, 0, 7 }, { 1, 5, 8 } }, new Point(1, 1));
 
-            while (!eightPuzzleAgent.MakeMove((state) => state == environment.GoalState)) ;
+            while (!eightPuzzleAgent.MakeMove((state) => state == EightPuzzleEnvironment.GoalState)) ;
 
-            for (var a = eightPuzzleAgent.GetFinishedState(); a != null; a = a.Predecessor)
+            for (var a = eightPuzzleAgent.CurrentData; a != null; a = a.Predecessor)
             {
                 displayStates.AddFirst(a.State);
             }
@@ -126,11 +126,16 @@ namespace EightPuzzle
         public void LoadTiles(int[,] tiles, Point emptyTile)
         {
             eightPuzzleAgent = new(
-                startingState: new(tiles, emptyTile),
                 frontier: new PriorityQueueFrontier<EightPuzzleState>(),
                 environment: environment,
-                getScore: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, SharedLibrary.Movement.Results.PlanningResult<EightPuzzleState> result)
+                getScore: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, PlanningResult<EightPuzzleState> result)
                     => curr.CumulativeCost + result.Cost + EightPuzzleEnvironment.DistanceFromSolved(result.SuccessorState));
+
+            var newState = new EightPuzzleState(tiles, emptyTile);
+            var newStateToken = new StateToken<IState>(newState);
+
+            eightPuzzleAgent.SpecifyStartState(newState, newStateToken);
+            environment.RegisterAgent(eightPuzzleAgent, newState, newStateToken);
         }
     }
 }
