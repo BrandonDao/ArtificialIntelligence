@@ -13,6 +13,6 @@ namespace SharedLibrary.Environments
         public void RegisterAgent(IAgent<TState> agent, TState startingState, StateToken<IState> startingStateToken);
         public List<TMovement> GetMovements(IAgent<TState> agent);
         public List<TMovement> GetMovements(IAgent<TState> agent, StateToken<IState> currentStateToken);
-        public TResult MakeMove(TMovement movement);
+        public TResult MakeMove(IAgent<TState> agent, TMovement movement);
     }
 }
