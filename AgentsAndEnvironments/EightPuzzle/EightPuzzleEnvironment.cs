@@ -80,7 +80,7 @@ namespace SharedLibrary
                             probability: 1)
                         ]));
 
-                    stateMap.Add(movements[^1].Results[^1].SuccessorStateToken, movements[^1].Results[^1].SuccessorState);
+                    stateMap.Add(movements[^1].Results[^1].StateToken, movements[^1].Results[^1].State);
                 }
             }
             return movements;

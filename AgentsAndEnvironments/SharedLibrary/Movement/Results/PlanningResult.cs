@@ -6,8 +6,8 @@ namespace SharedLibrary.Movement.Results
             : IResult<TState>
         where TState : IState
     {
-        public TState SuccessorState { get; } = successor;
-        public StateToken<IState> SuccessorStateToken { get; } = successorToken;
+        public TState State { get; } = successor;
+        public StateToken<IState> StateToken { get; } = successorToken;
         public float Cost { get; } = cost;
         public float Probability { get; } = probability;
     }

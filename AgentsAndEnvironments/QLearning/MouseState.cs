@@ -5,7 +5,7 @@ using Point = Microsoft.Xna.Framework.Point;
 namespace QLearning
 {
     [DebuggerDisplay("({Position.X},{Position.Y})")]
-    public class MouseState(Point position, MouseState.Types type) : IState
+    public struct MouseState(Point position, MouseState.Types type) : IState
     {
         public enum Types
         {

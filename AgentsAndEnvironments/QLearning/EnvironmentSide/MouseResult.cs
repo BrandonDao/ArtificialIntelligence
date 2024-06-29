@@ -2,7 +2,7 @@
 
 namespace QLearning.EnvironmentSide
 {
-    public class MouseResult(MouseAgentResult result, MouseAgentResult actualResult, float probability)
+    public struct MouseResult(MouseAgentResult result, MouseAgentResult actualResult, float probability)
     {
         public MouseAgentResult AgentResult = result;
         public MouseAgentResult ActualResult = actualResult;

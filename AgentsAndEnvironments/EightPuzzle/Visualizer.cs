@@ -129,7 +129,7 @@ namespace EightPuzzle
                 frontier: new PriorityQueueFrontier<EightPuzzleState>(),
                 environment: environment,
                 getScore: (AgentData<EightPuzzleState> curr, HashSet<EightPuzzleState> visited, PlanningResult<EightPuzzleState> result)
-                    => curr.CumulativeCost + result.Cost + EightPuzzleEnvironment.DistanceFromSolved(result.SuccessorState));
+                    => curr.CumulativeCost + result.Cost + EightPuzzleEnvironment.DistanceFromSolved(result.State));
 
             var newState = new EightPuzzleState(tiles, emptyTile);
             var newStateToken = new StateToken<IState>(newState);

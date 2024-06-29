@@ -6,9 +6,9 @@ using System.Diagnostics;
 namespace QLearning.AgentSide
 {
     [DebuggerDisplay("{SuccessorState}")]
-    public class MouseAgentResult(MouseState state, StateToken<IState> stateToken) : IResult<MouseState>
+    public struct MouseAgentResult(MouseState state, StateToken<IState> stateToken) : IResult<MouseState>
     {
-        public MouseState SuccessorState => state;
-        public StateToken<IState> SuccessorStateToken => stateToken;
+        public MouseState State => state;
+        public StateToken<IState> StateToken => stateToken;
     }
 }

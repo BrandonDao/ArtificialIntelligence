@@ -40,8 +40,8 @@ namespace SharedLibrary.Agents
                     float newScore = getScore.Invoke(CurrentData, visited, result);
 
                     AgentData<TState> nextData = new(
-                        state: result.SuccessorState,
-                        stateToken: result.SuccessorStateToken,
+                        state: result.State,
+                        stateToken: result.StateToken,
                         founder: CurrentData,
                         priority: newScore,
                         cumulativeCost: CurrentData.CumulativeCost + result.Cost);
