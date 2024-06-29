@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Expectimax", "Expectimax\Ex
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedLibrary", "SharedLibrary\SharedLibrary.csproj", "{0F277CCD-05A4-4964-841D-9B785BB1F06C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QLearning", "QLearning\QLearning.csproj", "{1BCBC089-0054-4A96-971E-6513526BD384}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QLearning", "QLearning\QLearning.csproj", "{1BCBC089-0054-4A96-971E-6513526BD384}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeuralNetworkLibrary", "NeuralNetworkLibrary\NeuralNetworkLibrary.csproj", "{03BA4BCB-3AC7-45DC-B117-200BD92D065E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{1BCBC089-0054-4A96-971E-6513526BD384}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BCBC089-0054-4A96-971E-6513526BD384}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BCBC089-0054-4A96-971E-6513526BD384}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03BA4BCB-3AC7-45DC-B117-200BD92D065E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03BA4BCB-3AC7-45DC-B117-200BD92D065E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03BA4BCB-3AC7-45DC-B117-200BD92D065E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03BA4BCB-3AC7-45DC-B117-200BD92D065E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
