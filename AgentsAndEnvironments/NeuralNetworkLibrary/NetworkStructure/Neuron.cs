@@ -51,14 +51,14 @@
         {
             double activationFuncDerivative = ActivationFunc.Derivative(RawOutput);
 
-            double a = learningRate * -(Delta * activationFuncDerivative);
-            biasUpdate += a;
+            double a = learningRate * (Delta * activationFuncDerivative);
+            biasUpdate -= a;
 
             foreach (var dendrite in Dendrites)
             {
                 dendrite.Previous.Delta += Delta * activationFuncDerivative * dendrite.Weight;
 
-                dendrite.WeightUpdate += a * dendrite.Previous.ActivatedOutput;
+                dendrite.WeightUpdate -= a * dendrite.Previous.ActivatedOutput;
             }
             Delta = 0;
         }

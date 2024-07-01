@@ -36,14 +36,14 @@ namespace QLearning
         {
             Editor.RemoveDefaultComponents();
 
-            var startingState = new MouseState(new Point(2, 1), MouseState.Types.Unknown);
+            var startingState = new MouseState(new Point(0, 0), MouseState.Types.Unknown);
             environment = new();
             Mouse = new(environment, startingState);
 
             blankTexture = new Texture2D(Editor.GraphicsDevice, width: 1, height: 1);
             blankTexture.SetData([Color.White]);
 
-            tileSize = ((Math.Max(Editor.GraphicsDevice.Viewport.Width, Editor.GraphicsDevice.Viewport.Height) - gapSize) / MouseEnvironment.Width) - gapSize;
+            tileSize = ((Math.Min(Editor.GraphicsDevice.Viewport.Width, Editor.GraphicsDevice.Viewport.Height) - gapSize) / Math.Max(MouseEnvironment.Width, MouseEnvironment.Height)) - gapSize;
 
             UpdateDuration = TimeSpan.FromMilliseconds(300);
 
@@ -128,25 +128,25 @@ namespace QLearning
                             Color.Blue);
                     }
 
-                    if (x is < 0 or >= MouseEnvironment.Width || y is < 0 or >= MouseEnvironment.Height) continue;
+                    //if (x is < 0 or >= MouseEnvironment.Width || y is < 0 or >= MouseEnvironment.Height) continue;
 
-                    if (!Mouse.stateToAllMovements.TryGetValue(drawMap[x, y].state, out HashSet<MouseAgentMovement>? movements)) continue;
+                    //if (!Mouse.stateToAllMovements.TryGetValue(drawMap[x, y].state, out HashSet<MouseAgentMovement>? movements)) continue;
 
-                    foreach(var movement in movements)
-                    {
-                        string text = Math.Round(Mouse.QMap[movement], 0).ToString();
+                    //foreach(var movement in movements)
+                    //{
+                    //    string text = Math.Round(Mouse.QMap[movement], 0).ToString();
 
-                        Vector2 textPosition = movement.Direction switch
-                        {
-                            MouseAgentMovement.Directions.Up => drawMap[x,y].destRect.Center.ToVector2() + new Vector2(-Editor.Font.MeasureString(text).X / 2, -tileSize / 3),
-                            MouseAgentMovement.Directions.Down => drawMap[x, y].destRect.Center.ToVector2() + new Vector2(-Editor.Font.MeasureString(text).X / 2 , tileSize / 3),
-                            MouseAgentMovement.Directions.Left => drawMap[x, y].destRect.Center.ToVector2() + new Vector2(-tileSize / 3, 0),
-                            MouseAgentMovement.Directions.Right => drawMap[x, y].destRect.Center.ToVector2() + new Vector2(tileSize / 3, 0),
-                            _ => throw new NotImplementedException(),
-                        };
+                    //    Vector2 textPosition = movement.Direction switch
+                    //    {
+                    //        MouseAgentMovement.Directions.Up => drawMap[x,y].destRect.Center.ToVector2() + new Vector2(-Editor.Font.MeasureString(text).X / 2, -tileSize / 3),
+                    //        MouseAgentMovement.Directions.Down => drawMap[x, y].destRect.Center.ToVector2() + new Vector2(-Editor.Font.MeasureString(text).X / 2 , tileSize / 3),
+                    //        MouseAgentMovement.Directions.Left => drawMap[x, y].destRect.Center.ToVector2() + new Vector2(-tileSize / 3, 0),
+                    //        MouseAgentMovement.Directions.Right => drawMap[x, y].destRect.Center.ToVector2() + new Vector2(tileSize / 3, 0),
+                    //        _ => throw new NotImplementedException(),
+                    //    };
 
-                        Editor.spriteBatch.DrawString(Editor.Font, text, textPosition, Color.Black);
-                    }
+                    //    Editor.spriteBatch.DrawString(Editor.Font, text, textPosition, Color.Black);
+                    //}
 
                     //float alpha = ( + 1000) / 2000;
                     //Editor.spriteBatch.Draw(blankTexture, drawMap[pos.X, pos.Y].destRect, Color.Lerp(Color.Black, Color.White, alpha));

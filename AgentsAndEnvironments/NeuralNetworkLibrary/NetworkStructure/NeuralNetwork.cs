@@ -30,12 +30,16 @@ namespace NeuralNetworkLibrary.NetworkStructure
         }
 
         private readonly ErrorFunction errorFunc;
+        private readonly ActivationFunction activationFunc;
+        private readonly int[] neuronsPerLayer;
 
         public double Fitness;
 
         public NeuralNetwork(ActivationFunction activationFunc, ErrorFunction errorFunc, params int[] neuronsPerLayer)
         {
+            this.activationFunc = activationFunc;
             this.errorFunc = errorFunc;
+            this.neuronsPerLayer = neuronsPerLayer;
 
             Layers = new Layer[neuronsPerLayer.Length];
             Layers[0] = new Layer(ActivationFunction.Identity, neuronsPerLayer[0]);
@@ -101,6 +105,23 @@ namespace NeuralNetworkLibrary.NetworkStructure
             {
                 Layers[i].ApplyUpdates();
             }
+        }
+
+        public NeuralNetwork Clone()
+        {
+            NeuralNetwork clone = new(activationFunc, errorFunc, neuronsPerLayer);
+
+            for(int layerIdx = 0; layerIdx < Layers.Length; layerIdx++)
+            {
+                for(int neuronIdx = 0; neuronIdx < Layers[layerIdx].Neurons.Length; neuronIdx++)
+                {
+                    for(int dendriteIdx = 0; dendriteIdx < Layers[layerIdx].Neurons[neuronIdx].Dendrites.Length; dendriteIdx++)
+                    {
+                        clone.Layers[layerIdx].Neurons[neuronIdx].Dendrites[dendriteIdx].Weight = Layers[layerIdx].Neurons[neuronIdx].Dendrites[dendriteIdx].Weight;
+                    }
+                }
+            }
+            return clone;
         }
 
         public double TrainWithGradientDescent(double[][] inputs, double[][] desiredOutputs, double learningRate)

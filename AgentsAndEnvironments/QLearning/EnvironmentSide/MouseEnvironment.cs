@@ -9,17 +9,17 @@ namespace QLearning.EnvironmentSide
 {
     public class MouseEnvironment() : IEnvironment<MouseState, MouseAgentMovement, MouseAgentResult>
     {
-        public const int Width = 4;
-        public const int Height = 3;
-        public readonly Point WallPosition = new(1, 1);
-        public readonly Point FirePosition = new(3, 1);
-        public readonly Point CheesePosition = new(3, 0);
+        public const int Width = 5;
+        public const int Height = 1;
+        public readonly Point WallPosition = new(-1, -1);
+        public readonly Point FirePosition = new(-1, -1);
+        public readonly Point CheesePosition = new(4, 0);
         
         private readonly (MouseAgentMovement.Directions direction, Point[] results)[] possibleMoves = [
-            (MouseAgentMovement.Directions.Up, [new(0, -1), new(-1, 0), new(1, 0)]),
-            (MouseAgentMovement.Directions.Down, [new(0, 1), new(-1, 0), new(1, 0)]),
-            (MouseAgentMovement.Directions.Left, [new(-1, 0), new(0, -1), new(0, 1)]),
-            (MouseAgentMovement.Directions.Right, [new(1, 0), new(0, -1), new(0, 1)]),
+            (MouseAgentMovement.Directions.Up, [new(0, -1)/*, new(-1, 0), new(1, 0)*/]),
+            (MouseAgentMovement.Directions.Down, [new(0, 1)/*, new(-1, 0), new(1, 0)*/]),
+            (MouseAgentMovement.Directions.Left, [new(-1, 0)/*, new(0, -1), new(0, 1)*/]),
+            (MouseAgentMovement.Directions.Right, [new(1, 0)/*, new(0, -1), new(0, 1)*/]),
         ];
         private readonly Dictionary<StateToken<IState>, MouseState> stateMap = [];
 
@@ -51,17 +51,17 @@ namespace QLearning.EnvironmentSide
 
             foreach (var possibleMoveSet in possibleMoves)
             {
-                MouseMovement movement = new(new MouseResult[3]);
-                MouseAgentMovement agentMovement = new(possibleMoveSet.direction, new MouseAgentResult[3]);
+                MouseMovement movement = new(new MouseResult[1]);
+                MouseAgentMovement agentMovement = new(possibleMoveSet.direction, new MouseAgentResult[1]);
 
-                movement.Results[0] = GetResult(state, possibleMoveSet.results[0], probability: .8f);
+                movement.Results[0] = GetResult(state, possibleMoveSet.results[0], probability: 1);//.8f);
                 agentMovement.Results[0] = movement.Results[0].AgentResult;
 
-                movement.Results[1] = GetResult(state, possibleMoveSet.results[1], probability: .1f);
-                agentMovement.Results[1] = movement.Results[1].AgentResult;
+                //movement.Results[1] = GetResult(state, possibleMoveSet.results[1], probability: .1f);
+                //agentMovement.Results[1] = movement.Results[1].AgentResult;
 
-                movement.Results[2] = GetResult(state, possibleMoveSet.results[2], probability: .1f);
-                agentMovement.Results[2] = movement.Results[2].AgentResult;
+                //movement.Results[2] = GetResult(state, possibleMoveSet.results[2], probability: .1f);
+                //agentMovement.Results[2] = movement.Results[2].AgentResult;
 
                 movements.Add(movement);
                 agentMovements.Add(agentMovement);

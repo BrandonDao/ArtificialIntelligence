@@ -58,7 +58,7 @@ namespace XORGate
                 // trainer.Train();
                 // var net = trainer.Networks[0];
 
-                double error = net.TrainWithGradientDescent(inputs, desiredOutputs, learningRate: 0.05f);
+                double error = net.TrainWithGradientDescent(inputs, desiredOutputs, learningRate: 0.075f);
 
                 for (int i = 0; i < outputs.Length; i++)
                 {
