@@ -1,1 +1,1 @@
-# NeuralNetworks
+# ArtificialIntelligence
